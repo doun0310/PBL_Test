@@ -149,9 +149,9 @@ Response:
 
 ## 📦 필요한 패키지
 
-- **http** (^1.1.0): REST API 통신
-- **shared_preferences** (^2.2.2): 로컬 데이터 저장 (JWT 토큰)
-- **intl** (^0.18.1): 날짜 포맷팅 및 한국어 지원
+- http (^1.1.0): REST API 통신
+- shared_preferences (^2.2.2): 로컬 데이터 저장 (JWT 토큰)
+- intl (^0.18.1): 날짜 포맷팅 및 한국어 지원
 
 ## 📅 개발 진행 상황
 
@@ -180,14 +180,6 @@ Response:
 - UI/UX 개선
 - 통합 테스트
 
-## 🎨 주요 기술
-
-- **아키텍처**: MVC 패턴
-- **상태 관리**: StatefulWidget + setState
-- **네트워킹**: http 패키지
-- **로컬 저장소**: shared_preferences
-- **UI**: Material Design
-
 ## 🔧 문제 해결
 
 ### 의존성 오류
@@ -214,19 +206,20 @@ flutter pub get
 
 ## 📈 향후 개선 사항
 
-1. **상태 관리**: Provider, Riverpod, Bloc 도입
-2. **오프라인 지원**: SQLite, Hive 데이터베이스
-3. **푸시 알림**: Firebase Cloud Messaging
-4. **검색 기능**: 식단 검색 및 필터링
-5. **즐겨찾기**: 선호 식단 저장
-6. **영양 목표**: 일일 권장 섭취량 설정
-7. **다크 모드**: 테마 전환 기능
+1. 상태 관리: Provider, Riverpod, Bloc 도입
+2. 오프라인 지원: SQLite, Hive 데이터베이스
+3. 푸시 알림: Firebase Cloud Messaging
+4. 검색 기능: 식단 검색 및 필터링
+5. 즐겨찾기: 선호 식단 저장
+6. 영양 목표: 일일 권장 섭취량 설정
+7. 다크 모드: 테마 전환 기능
+8. AI를 활용한 사용자 별 알레르기 예방 기능
 
 ## 📄 라이선스
 
-이 프로젝트는 교육 목적으로 개발되었습니다.
+학사 프로젝트 용 
 
 ## 👥 개발자
 
-- 이도은: 백엔드 API 및 데이터베이스
-- 강성민: Flutter UI 및 프론트엔드
+- 이도은: Flutter UI 및 프론트엔드
+- 강성민: 백엔드 API 및 데이터베이스
