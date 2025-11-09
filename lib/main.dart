@@ -10,7 +10,7 @@ void main() {
 }
 
 class MealManagementApp extends StatelessWidget {
-  const MealManagementApp({Key? key}) : super(key: key);
+  const MealManagementApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class MealManagementApp extends StatelessWidget {
 }
 
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({Key? key}) : super(key: key);
+  const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
