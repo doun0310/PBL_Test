@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: meal-management-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+      - DATABASE_NAME=meal_management
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=password
+      - JWT_SECRET=your_jwt_secret_here
+    depends_on:
+      - database
+    networks:
+      - meal-management-network
+    restart: unless-stopped
+
+  # Database Service
+  database:
+    image: mariadb:10.11
+    container_name: meal-management-db
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=meal_management
+      - MYSQL_USER=meal_user
+      - MYSQL_PASSWORD=meal_password
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - meal-management-network
+    restart: unless-stopped
+
+  # Optional: phpMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: meal-management-phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=database
+      - PMA_PORT=3306
+      - PMA_USER=root
+      - PMA_PASSWORD=password
+    depends_on:
+      - database
+    networks:
+      - meal-management-network
+    restart: unless-stopped
+
+networks:
+  meal-management-network:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local
