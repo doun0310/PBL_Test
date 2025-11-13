@@ -149,6 +149,45 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
 
+          // 기능 버튼들
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: [
+                  _buildFeatureButton(
+                    context,
+                    icon: Icons.camera_alt,
+                    label: '음식 인식',
+                    onTap: () => Navigator.pushNamed(context, '/food-recognition'),
+                  ),
+                  _buildFeatureButton(
+                    context,
+                    icon: Icons.qr_code_scanner,
+                    label: '성분표 스캔',
+                    onTap: () => Navigator.pushNamed(context, '/nutrition-scan'),
+                  ),
+                  _buildFeatureButton(
+                    context,
+                    icon: Icons.recommend,
+                    label: '음식 추천',
+                    onTap: () => Navigator.pushNamed(context, '/recommendation'),
+                  ),
+                  _buildFeatureButton(
+                    context,
+                    icon: Icons.analytics,
+                    label: '식단 분석',
+                    onTap: () => Navigator.pushNamed(context, '/analytics'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // 아침
           _buildMealSection('아침', _dailyMeal!.breakfast, Icons.wb_sunny),
           const SizedBox(height: 16),
@@ -160,6 +199,33 @@ class _HomeScreenState extends State<HomeScreen> {
           // 저녁
           _buildMealSection('저녁', _dailyMeal!.dinner, Icons.nights_stay),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 80,
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Icon(icon, color: Theme.of(context).primaryColor, size: 32),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11),
+            ),
+          ],
+        ),
       ),
     );
   }

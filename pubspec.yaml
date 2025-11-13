@@ -22,6 +22,21 @@ dependencies:
   # 아이콘
   cupertino_icons: ^1.0.2
 
+  # 이미지 선택 (음식 사진 촬영/선택)
+  image_picker: ^1.0.4
+
+  # 카메라 기능
+  camera: ^0.10.5+5
+
+  # 차트 (주간/월간 분석)
+  fl_chart: ^0.66.0
+
+  # 파일 경로 처리
+  path_provider: ^2.1.1
+
+  # 권한 관리
+  permission_handler: ^11.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

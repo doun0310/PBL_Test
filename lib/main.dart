@@ -3,6 +3,10 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/food_recognition_screen.dart';
+import 'screens/nutrition_label_scan_screen.dart';
+import 'screens/recommendation_screen.dart';
+import 'screens/analytics_screen.dart';
 import 'services/auth_service.dart';
 
 void main() {
@@ -15,7 +19,7 @@ class MealManagementApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '식단 관리 앱',
+      title: 'D(iet) 101 - 식단 관리 앱',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -26,6 +30,10 @@ class MealManagementApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/home': (context) => const HomeScreen(),
         '/profile': (context) => const ProfileScreen(),
+        '/food-recognition': (context) => const FoodRecognitionScreen(),
+        '/nutrition-scan': (context) => const NutritionLabelScanScreen(),
+        '/recommendation': (context) => const RecommendationScreen(),
+        '/analytics': (context) => const AnalyticsScreen(),
       },
     );
   }
