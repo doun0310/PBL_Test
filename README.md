@@ -1,7 +1,6 @@
-# D(iet) 101 - 식단 관리 앱
+# - 식단 관리 앱
 
 Flutter와 Dart를 이용한 식단 관리 모바일 애플리케이션입니다.
-`JangMinSeong/Diet101` Kotlin 기반 앱을 Flutter로 재구현한 프로젝트입니다.
 
 ## 📱 주요 기능
 
@@ -329,9 +328,7 @@ flutter pub get
 9. **운동 통합**: 운동 칼로리 소모 추적
 10. **다국어 지원**: 영어, 일본어 등
 
-## 🌟 Diet101 참조 기능
-
-이 프로젝트는 `JangMinSeong/Diet101`의 다음 기능들을 Flutter로 재구현했습니다:
+이 프로젝트는  다음 기능들을 Flutter로 재구현했습니다:
 
 - ✅ YOLO v8 기반 음식 인식
 - ✅ EasyOCR 기반 영양성분표 인식
@@ -346,9 +343,6 @@ flutter pub get
 이 프로젝트는 교육 목적으로 개발되었습니다.
 
 ## 👥 개발팀
-
-**원본 Diet101 프로젝트 (Kotlin/Android):**
-- 김보근, 김동영, 박사랑, 이주미, 장민성, 조현우
 
 **Flutter 재구현:**
 - 이도은
