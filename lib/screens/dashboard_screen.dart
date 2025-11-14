@@ -6,6 +6,7 @@ import '../services/meal_tracking_service.dart';
 import 'add_meal_screen.dart';
 import 'profile_screen.dart';
 import 'statistics_screen.dart';
+import 'food_recommendation_screen.dart';
 import '../widgets/nutrition_progress_card.dart';
 import '../widgets/meal_card.dart';
 
@@ -109,6 +110,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             goals: _userGoals,
                           ),
                           const SizedBox(height: 24),
+                          _buildRecommendationButton(),
+                          const SizedBox(height: 16),
                           _buildMealsSection(),
                         ],
                       ),
@@ -221,6 +224,86 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
       _loadData();
     }
+  }
+
+  Widget _buildRecommendationButton() {
+    final remainingCalories = _userGoals.dailyCalorieGoal - _todayNutrition.calories;
+    
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const FoodRecommendationScreen(),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFF9800).withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.lightbulb_outline,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '식사 추천 받기',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    remainingCalories > 0 
+                        ? '남은 칼로리: ${remainingCalories.toInt()} kcal'
+                        : '오늘의 목표를 달성했습니다!',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: Colors.white,
+              size: 28,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildMealsSection() {
