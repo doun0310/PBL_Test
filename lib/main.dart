@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/dashboard_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
 import 'services/auth_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('ko_KR', null);
   runApp(const MealManagementApp());
 }
 
@@ -19,12 +22,13 @@ class MealManagementApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        useMaterial3: true,
       ),
       home: const AuthWrapper(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const HomeScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
         '/profile': (context) => const ProfileScreen(),
       },
     );
@@ -46,7 +50,7 @@ class AuthWrapper extends StatelessWidget {
         }
 
         if (snapshot.data == true) {
-          return const HomeScreen();
+          return const DashboardScreen();
         }
 
         return const LoginScreen();

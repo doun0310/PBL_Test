@@ -1,5 +1,5 @@
 name: meal_management_app
-description: 학교 식단 관리 앱
+description: 종합 식단 및 칼로리 추적 애플리케이션
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -21,6 +21,15 @@ dependencies:
 
   # 아이콘
   cupertino_icons: ^1.0.2
+
+  # 이미지 선택 (카메라/갤러리)
+  image_picker: ^1.0.4
+
+  # 차트 라이브러리
+  fl_chart: ^0.65.0
+
+  # 프로그레스 인디케이터
+  percent_indicator: ^4.2.3
 
 dev_dependencies:
   flutter_test:

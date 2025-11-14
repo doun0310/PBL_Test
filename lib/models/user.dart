@@ -1,9 +1,12 @@
+import 'nutrition_goals.dart';
+
 class User {
   final int id;
   final String email;
   final String name;
   final List<String> allergies;
   final List<String> preferences;
+  final NutritionGoals? nutritionGoals;
 
   User({
     required this.id,
@@ -11,6 +14,7 @@ class User {
     required this.name,
     required this.allergies,
     required this.preferences,
+    this.nutritionGoals,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -20,6 +24,9 @@ class User {
       name: json['name'] as String,
       allergies: List<String>.from(json['allergies'] as List),
       preferences: List<String>.from(json['preferences'] as List),
+      nutritionGoals: json['nutritionGoals'] != null
+          ? NutritionGoals.fromJson(json['nutritionGoals'])
+          : NutritionGoals.defaultGoals(),
     );
   }
 
@@ -30,6 +37,7 @@ class User {
       'name': name,
       'allergies': allergies,
       'preferences': preferences,
+      if (nutritionGoals != null) 'nutritionGoals': nutritionGoals!.toJson(),
     };
   }
 
@@ -39,6 +47,7 @@ class User {
     String? name,
     List<String>? allergies,
     List<String>? preferences,
+    NutritionGoals? nutritionGoals,
   }) {
     return User(
       id: id ?? this.id,
@@ -46,6 +55,7 @@ class User {
       name: name ?? this.name,
       allergies: allergies ?? this.allergies,
       preferences: preferences ?? this.preferences,
+      nutritionGoals: nutritionGoals ?? this.nutritionGoals,
     );
   }
 }
