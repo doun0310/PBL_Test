@@ -1,7 +1,7 @@
-name: meal_management_app
-description: 학교 식단 관리 앱
+name: diet_tracking_app
+description: AI 기반 식단 및 칼로리 추적 애플리케이션
 publish_to: 'none'
-version: 1.0.0+1
+version: 2.0.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -13,7 +13,7 @@ dependencies:
   # HTTP 요청
   http: ^1.1.0
 
-  # 로컬 저장소 (JWT 토큰 저장)
+  # 로컬 저장소
   shared_preferences: ^2.2.2
 
   # 날짜 포맷팅
@@ -21,6 +21,21 @@ dependencies:
 
   # 아이콘
   cupertino_icons: ^1.0.2
+
+  # 이미지 선택
+  image_picker: ^1.0.7
+
+  # 차트 라이브러리
+  fl_chart: ^0.66.2
+
+  # 상태 관리
+  provider: ^6.1.1
+
+  # 경로 라이브러리
+  path_provider: ^2.1.2
+
+  # UUID 생성
+  uuid: ^4.3.3
 
 dev_dependencies:
   flutter_test:
@@ -30,3 +45,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  
+  assets:
+    - assets/images/
