@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/user_goals.dart';
+import '../models/user.dart';
 import '../services/meal_tracking_service.dart';
+import '../services/auth_service.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -11,20 +14,23 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   UserGoals _userGoals = UserGoals();
+  User? _currentUser;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadUserGoals();
+    _loadData();
   }
 
-  Future<void> _loadUserGoals() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
       final goals = await MealTrackingService.getUserGoals();
+      final user = await AuthService.getCurrentUser();
       setState(() {
         _userGoals = goals;
+        _currentUser = user;
         _isLoading = false;
       });
     } catch (e) {
@@ -38,6 +44,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('목표가 저장되었습니다')),
       );
+    }
+  }
+
+  Future<void> _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('로그아웃'),
+        content: const Text('로그아웃 하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('로그아웃'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await AuthService.logout();
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ),
+          (route) => false,
+        );
+      }
     }
   }
 
@@ -113,20 +151,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Diet Tracker 사용자',
-            style: TextStyle(
+          Text(
+            _currentUser?.name ?? 'Diet Tracker 사용자',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            '건강한 식습관을 위해 노력중입니다',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 14,
+          const SizedBox(height: 4),
+          if (_currentUser?.email != null)
+            Text(
+              _currentUser!.email,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 14,
+              ),
+            ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: _handleLogout,
+            icon: const Icon(Icons.logout, size: 18),
+            label: const Text('로그아웃'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white.withOpacity(0.2),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: Colors.white, width: 1),
+              ),
             ),
           ),
         ],
