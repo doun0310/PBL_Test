@@ -1,25 +1,25 @@
 class User {
-  final int id;
+  final String id;
   final String email;
   final String name;
-  final List<String> allergies;
-  final List<String> preferences;
+  final String? profileImageUrl;
+  final DateTime createdAt;
 
   User({
     required this.id,
     required this.email,
     required this.name,
-    required this.allergies,
-    required this.preferences,
+    this.profileImageUrl,
+    required this.createdAt,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as int,
+      id: json['id'] as String,
       email: json['email'] as String,
       name: json['name'] as String,
-      allergies: List<String>.from(json['allergies'] as List),
-      preferences: List<String>.from(json['preferences'] as List),
+      profileImageUrl: json['profileImageUrl'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 
@@ -28,24 +28,24 @@ class User {
       'id': id,
       'email': email,
       'name': name,
-      'allergies': allergies,
-      'preferences': preferences,
+      'profileImageUrl': profileImageUrl,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 
   User copyWith({
-    int? id,
+    String? id,
     String? email,
     String? name,
-    List<String>? allergies,
-    List<String>? preferences,
+    String? profileImageUrl,
+    DateTime? createdAt,
   }) {
     return User(
       id: id ?? this.id,
       email: email ?? this.email,
       name: name ?? this.name,
-      allergies: allergies ?? this.allergies,
-      preferences: preferences ?? this.preferences,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

@@ -30,3 +30,22 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Flutter ###
+# Build outputs
+build/
+*.apk
+*.aab
+*.ipa
+
+# Coverage
+coverage/
+
+# Misc
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+pubspec.lock
