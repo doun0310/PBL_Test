@@ -31,7 +31,7 @@ class DietTrackingApp extends StatelessWidget {
           foregroundColor: Color(0xFF2C3E50),
           elevation: 0,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
