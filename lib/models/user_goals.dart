@@ -23,6 +23,8 @@ class UserGoals {
     );
   }
 
+  get carbohydrateGoal => null;
+
   Map<String, dynamic> toJson() {
     return {
       'dailyCalorieGoal': dailyCalorieGoal,

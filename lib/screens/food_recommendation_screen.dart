@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/food_item.dart';
-import '../models/meal_entry.dart';
 import '../models/user_goals.dart';
 import '../services/food_database_service.dart';
 import '../services/meal_tracking_service.dart';

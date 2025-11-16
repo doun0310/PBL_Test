@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import '../models/meal_entry.dart';
-import '../models/food_item.dart';
 import '../services/meal_tracking_service.dart';
 import 'food_search_screen.dart';
 import 'photo_analysis_screen.dart';

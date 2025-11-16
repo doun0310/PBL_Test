@@ -6,7 +6,7 @@ import '../services/meal_tracking_service.dart';
 import 'add_meal_screen.dart';
 import 'profile_screen.dart';
 import 'statistics_screen.dart';
-import 'food_recommendation_screen.dart';
+import 'daily_meal_table_screen.dart';
 import '../widgets/nutrition_progress_card.dart';
 import '../widgets/meal_card.dart';
 
@@ -189,7 +189,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               IconButton(
                 icon: const Icon(Icons.calendar_today_outlined),
-                onPressed: _selectDate,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DailyMealTableScreen(
+                        selectedDate: _selectedDate,
+                      ),
+                    ),
+                  );
+                },
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
@@ -230,11 +239,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final remainingCalories = _userGoals.dailyCalorieGoal - _todayNutrition.calories;
     
     return InkWell(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const FoodRecommendationScreen(),
+            builder: (context) => AddMealScreen(
+              onMealAdded: () {
+                _loadData();
+              },
+            ),
           ),
         );
       },
@@ -264,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
-                Icons.lightbulb_outline,
+                Icons.add_circle_outline,
                 color: Colors.white,
                 size: 28,
               ),
@@ -275,7 +288,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '식사 추천 받기',
+                    '식사 추가하기',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
