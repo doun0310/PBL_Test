@@ -6,7 +6,7 @@ import '../services/meal_tracking_service.dart';
 import 'add_meal_screen.dart';
 import 'profile_screen.dart';
 import 'statistics_screen.dart';
-import 'weekly_meal_plan_screen.dart';
+import 'daily_meal_table_screen.dart';
 import '../widgets/nutrition_progress_card.dart';
 import '../widgets/meal_card.dart';
 
@@ -193,7 +193,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const WeeklyMealPlanScreen(),
+                      builder: (context) => DailyMealTableScreen(
+                        selectedDate: _selectedDate,
+                      ),
                     ),
                   );
                 },
