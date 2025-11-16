@@ -47,25 +47,25 @@ Flutter와 Dart를 이용한 현대적인 식단 및 칼로리 추적 모바일 
 
 ```
 lib/
-├── main.dart                          # 앱 진입점
+├── main.dart                           메인
 ├── models/
-│   ├── food_item.dart                # 음식 항목 모델
-│   ├── meal_entry.dart               # 식사 기록 모델
-│   └── user_goals.dart               # 사용자 목표 모델
+│   ├── food_item.dart                  음식 항목 모델
+│   ├── meal_entry.dart                 식사 기록 모델
+│   └── user_goals.dart                 사용자 목표 모델
 ├── services/
-│   ├── food_database_service.dart    # 음식 데이터베이스 서비스
-│   └── meal_tracking_service.dart    # 식사 추적 서비스
+│   ├── food_database_service.dart      음식 데이터베이스 서비스
+│   └── meal_tracking_service.dart      식사 추적 서비스
 ├── screens/
-│   ├── dashboard_screen.dart         # 메인 대시보드
-│   ├── add_meal_screen.dart          # 식사 추가 화면
-│   ├── food_search_screen.dart       # 음식 검색 화면
-│   ├── photo_analysis_screen.dart    # 사진 분석 화면
-│   ├── food_recommendation_screen.dart # 식사 추천 화면
-│   ├── statistics_screen.dart        # 통계 화면
-│   └── profile_screen.dart           # 프로필 화면
+│   ├── dashboard_screen.dart           메인 대시보드 화면
+│   ├── add_meal_screen.dart            식사 추가 화면
+│   ├── food_search_screen.dart         음식 검색 화면
+│   ├── photo_analysis_screen.dart      사진 분석 화면
+│   ├── food_recommendation_screen.dart 식사 추천 화면
+│   ├── statistics_screen.dart          통계 화면
+│   └── profile_screen.dart             프로필 화면
 └── widgets/
-    ├── nutrition_progress_card.dart  # 영양 진행 카드
-    └── meal_card.dart                # 식사 카드
+    ├── nutrition_progress_card.dart    영양 진행 카드 위젯
+    └── meal_card.dart                  식사 카드 위젯
 ```
 
 🚀 설치 및 실행
