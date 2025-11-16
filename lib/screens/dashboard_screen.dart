@@ -6,7 +6,6 @@ import '../services/meal_tracking_service.dart';
 import 'add_meal_screen.dart';
 import 'profile_screen.dart';
 import 'statistics_screen.dart';
-import 'food_recommendation_screen.dart';
 import 'weekly_meal_plan_screen.dart';
 import '../widgets/nutrition_progress_card.dart';
 import '../widgets/meal_card.dart';
