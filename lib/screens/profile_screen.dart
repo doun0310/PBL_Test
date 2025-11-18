@@ -152,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            _currentUser?.name ?? 'Diet Tracker 사용자',
+            _currentUser?.name ?? '영양소 추적기 사용자',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 20,

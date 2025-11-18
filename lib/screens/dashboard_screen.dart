@@ -129,7 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.white,
       elevation: 0,
       title: const Text(
-        'Diet Tracker',
+        '영양소 추적기',
         style: TextStyle(
           color: Color(0xFF2C3E50),
           fontSize: 24,

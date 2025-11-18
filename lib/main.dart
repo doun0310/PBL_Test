@@ -16,7 +16,7 @@ class DietTrackingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Diet Tracker',
+      title: '영양소 추적기',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.green,

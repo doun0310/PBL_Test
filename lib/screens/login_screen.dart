@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'Diet Tracker',
+                          '영양소 추적기',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 32,
