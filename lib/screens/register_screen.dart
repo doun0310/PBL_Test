@@ -102,7 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4CAF50).withOpacity(0.3),
+                          color: dalgeurakBlueOne.withOpacity(0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -274,7 +274,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ElevatedButton(
                           onPressed: _isLoading ? null : _handleRegister,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4CAF50),
+                            backgroundColor: dalgeurakBlueOne,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

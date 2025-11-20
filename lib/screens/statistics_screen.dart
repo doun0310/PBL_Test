@@ -120,14 +120,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4CAF50) : Colors.transparent,
+          color: isSelected ? dalgeurakBlueOne : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey[700],
+            color: isSelected ? Colors.white : dalgeurakGrayFour,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -140,7 +140,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -403,11 +403,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
           Text(
             '${(food['calories'] as num).toInt()} kcal',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF4CAF50),
-            ),
+            style: mealCalories.copyWith(fontSize: 14, fontWeight: FontWeight.w600),
           ),
         ],
       ),

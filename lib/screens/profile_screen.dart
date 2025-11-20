@@ -116,15 +116,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+        gradient: LinearGradient(
+          colors: [dalgeurakBlueOne, blueFour],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.3),
+            color: dalgeurakBlueOne.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -146,18 +146,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person,
               size: 48,
-              color: Color(0xFF4CAF50),
+              color: dalgeurakBlueOne,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             _currentUser?.name ?? '영양소 추적기 사용자',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
+            style: profileName.copyWith(color: Colors.white, fontSize: 20),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -297,11 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             Text(
               '${value.toInt()} $unit',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF4CAF50),
-              ),
+              style: statisticsValue.copyWith(fontSize: 16),
             ),
           ],
         ),
@@ -311,7 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           min: min,
           max: max,
           divisions: ((max - min) / 10).toInt(),
-          activeColor: const Color(0xFF4CAF50),
+          activeColor: dalgeurakBlueOne,
           onChanged: onChanged,
         ),
       ],
@@ -324,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: ElevatedButton(
         onPressed: _saveGoals,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: dalgeurakBlueOne,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

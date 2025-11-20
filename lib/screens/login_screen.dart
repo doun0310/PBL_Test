@@ -251,12 +251,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           );
                         },
-                        child: const Text(
+                        child: Text(
                           '회원가입',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF4CAF50),
-                          ),
+                          style: btnTitle2.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
