@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/meal_tracking_service.dart';
 import '../models/user_goals.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -53,18 +55,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: dalgeurakGrayOne,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '통계',
-          style: TextStyle(color: Color(0xFF2C3E50)),
+          style: pageTitle1.copyWith(fontSize: 20),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF2C3E50)),
+        iconTheme: IconThemeData(color: dalgeurakBlueOne),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: dalgeurakBlueOne))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -47,9 +49,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (result['success']) {
       // 회원가입 성공
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('회원가입이 완료되었습니다! 로그인해주세요.'),
-          backgroundColor: Color(0xFF4CAF50),
+        SnackBar(
+          content: const Text('회원가입이 완료되었습니다! 로그인해주세요.'),
+          backgroundColor: greenFive,
         ),
       );
       
@@ -60,7 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message']),
-          backgroundColor: Colors.red,
+          backgroundColor: redTwo,
         ),
       );
     }
@@ -69,15 +71,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: dalgeurakGrayOne,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '회원가입',
-          style: TextStyle(color: Color(0xFF2C3E50)),
+          style: pageTitle1.copyWith(fontSize: 20),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF2C3E50)),
+        iconTheme: IconThemeData(color: dalgeurakBlueOne),
       ),
       body: SafeArea(
         child: Center(
@@ -92,12 +94,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                      gradient: LinearGradient(
+                        colors: [dalgeurakBlueOne, blueFour],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFF4CAF50).withOpacity(0.3),

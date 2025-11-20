@@ -3,6 +3,8 @@ import '../models/user_goals.dart';
 import '../models/user.dart';
 import '../services/meal_tracking_service.dart';
 import '../services/auth_service.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -82,18 +84,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: dalgeurakGrayOne,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '프로필',
-          style: TextStyle(color: Color(0xFF2C3E50)),
+          style: pageTitle1.copyWith(fontSize: 20),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF2C3E50)),
+        iconTheme: IconThemeData(color: dalgeurakBlueOne),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: dalgeurakBlueOne))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
