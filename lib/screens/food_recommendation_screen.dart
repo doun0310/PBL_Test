@@ -3,6 +3,7 @@ import '../models/food_item.dart';
 import '../models/user_goals.dart';
 import '../services/food_database_service.dart';
 import '../services/meal_tracking_service.dart';
+import '../themes/color_theme.dart';
 
 class FoodRecommendationScreen extends StatefulWidget {
   const FoodRecommendationScreen({super.key});

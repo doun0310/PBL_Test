@@ -101,7 +101,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF4CAF50) : Colors.transparent,
+                  color: isSelected ? yellowFive : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -209,7 +209,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
             icon: Icons.camera_alt,
             title: '사진으로 음식 분석',
             subtitle: '음식 사진을 찍어 자동으로 분석',
-            color: const Color(0xFF4CAF50),
+            color: yellowFive,
             onTap: () => _pickImageAndAnalyze(ImageSource.camera),
           ),
           const SizedBox(height: 16),

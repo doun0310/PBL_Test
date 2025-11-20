@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/meal_entry.dart';
 import '../services/food_database_service.dart';
+import '../themes/color_theme.dart';
 
 class PhotoAnalysisScreen extends StatefulWidget {
   final String imagePath;
@@ -97,8 +98,8 @@ class _PhotoAnalysisScreenState extends State<PhotoAnalysisScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(dalgeurakBlueOne),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -127,15 +128,15 @@ class _PhotoAnalysisScreenState extends State<PhotoAnalysisScreen> {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
-          color: const Color(0xFF4CAF50).withOpacity(0.1),
+          color: blueSeven.withOpacity(0.5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.check_circle,
-                    color: Color(0xFF4CAF50),
+                    color: dalgeurakBlueOne,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -216,7 +217,7 @@ class _PhotoAnalysisScreenState extends State<PhotoAnalysisScreen> {
                     max: foodEntry.foodItem.servingSize * 3,
                     divisions: 20,
                     label: '${foodEntry.servingSize.toInt()}${foodEntry.foodItem.unit}',
-                    activeColor: const Color(0xFF4CAF50),
+                    activeColor: yellowFive,
                     onChanged: (value) {
                       setState(() {
                         _detectedFoods[index] = foodEntry.copyWith(
@@ -323,8 +324,8 @@ class _PhotoAnalysisScreenState extends State<PhotoAnalysisScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+        gradient: LinearGradient(
+          colors: [yellowFive, yellowSix],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

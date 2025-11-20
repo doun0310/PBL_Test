@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/meal_entry.dart';
 import '../models/user_goals.dart';
 import '../services/meal_tracking_service.dart';
+import '../themes/color_theme.dart';
 
 class WeeklyMealPlanScreen extends StatefulWidget {
   const WeeklyMealPlanScreen({super.key});
@@ -211,7 +212,7 @@ class _WeeklyMealPlanScreenState extends State<WeeklyMealPlanScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isToday ? const Color(0xFF4CAF50) : const Color(0xFF2C3E50),
+                        color: isToday ? dalgeurakBlueOne : Colors.black,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -227,7 +228,7 @@ class _WeeklyMealPlanScreenState extends State<WeeklyMealPlanScreen> {
                         margin: const EdgeInsets.only(left: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50),
+                          color: yellowFive,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
@@ -249,7 +250,7 @@ class _WeeklyMealPlanScreenState extends State<WeeklyMealPlanScreen> {
                       fontWeight: FontWeight.bold,
                       color: totalCalories > _userGoals.dailyCalorieGoal
                           ? Colors.red[400]
-                          : const Color(0xFF4CAF50),
+                          : dalgeurakBlueOne,
                     ),
                   ),
               ],

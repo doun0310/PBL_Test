@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/food_item.dart';
 import '../models/meal_entry.dart';
 import '../services/food_database_service.dart';
+import '../themes/color_theme.dart';
 
 class FoodSearchScreen extends StatefulWidget {
   const FoodSearchScreen({super.key});
@@ -111,16 +112,16 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
   Widget _buildSelectedFoods() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: const Color(0xFF4CAF50).withOpacity(0.1),
+      color: blueSeven.withOpacity(0.5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '선택한 음식',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF4CAF50),
+              color: dalgeurakBlueOne,
             ),
           ),
           const SizedBox(height: 8),
@@ -203,7 +204,7 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[300]!,
+          color: isSelected ? dalgeurakBlueOne : Colors.grey[300]!,
           width: isSelected ? 2 : 1,
         ),
       ),
@@ -214,7 +215,7 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
             color: Colors.grey[100],
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Icon(Icons.restaurant, color: Color(0xFF4CAF50)),
+          child: Icon(Icons.restaurant, color: yellowFive),
         ),
         title: Text(
           food.name,
@@ -225,7 +226,7 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
           style: TextStyle(fontSize: 12, color: Colors.grey[600]),
         ),
         trailing: isSelected
-            ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50))
+            ? Icon(Icons.check_circle, color: dalgeurakBlueOne)
             : const Icon(Icons.add_circle_outline, color: Colors.grey),
         onTap: () {
           if (isSelected) {
