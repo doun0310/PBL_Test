@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/meal_entry.dart';
+import '../themes/color_theme.dart';
 import 'package:intl/intl.dart';
 
 class MealCard extends StatelessWidget {
@@ -41,10 +42,10 @@ class MealCard extends StatelessWidget {
                         children: [
                           Text(
                             meal.mealType.displayName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF2C3E50),
+                              color: Colors.black,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -95,7 +96,7 @@ class MealCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: blueSeven.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -138,19 +139,19 @@ class MealCard extends StatelessWidget {
     switch (meal.mealType) {
       case MealType.breakfast:
         icon = Icons.wb_sunny;
-        color = Colors.orange;
+        color = yellowFive;
         break;
       case MealType.lunch:
         icon = Icons.wb_sunny_outlined;
-        color = Colors.amber;
+        color = yellowOne;
         break;
       case MealType.dinner:
         icon = Icons.nights_stay;
-        color = Colors.indigo;
+        color = blueOne;
         break;
       case MealType.snack:
         icon = Icons.cookie_outlined;
-        color = Colors.pink;
+        color = pinkOne;
         break;
     }
 

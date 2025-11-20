@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 import 'register_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -61,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -76,15 +78,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                      gradient: LinearGradient(
+                        colors: [yellowFive, yellowSix],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4CAF50).withOpacity(0.3),
+                          color: yellowFive.withOpacity(0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -98,13 +100,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.white,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           '영양소 추적기',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: loginTitle.copyWith(color: Colors.white, fontSize: 32),
                         ),
                         const SizedBox(height: 8),
                         Text(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/meal_tracking_service.dart';
 import '../models/user_goals.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});

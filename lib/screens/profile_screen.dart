@@ -3,6 +3,8 @@ import '../models/user_goals.dart';
 import '../models/user.dart';
 import '../services/meal_tracking_service.dart';
 import '../services/auth_service.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
