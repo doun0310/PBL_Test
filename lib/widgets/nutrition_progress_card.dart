@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user_goals.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 
 class NutritionProgressCard extends StatelessWidget {
   final DailyNutrition nutrition;
@@ -21,15 +23,15 @@ class NutritionProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+        gradient: LinearGradient(
+          colors: [dalgeurakBlueOne, blueFour],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.3),
+            color: dalgeurakBlueOne.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -41,21 +43,13 @@ class NutritionProgressCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 '오늘의 칼로리',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: homeMenuWidgetTitle.copyWith(fontSize: 18),
               ),
               Text(
                 '${nutrition.calories.toInt()} / ${goals.dailyCalorieGoal.toInt()} kcal',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: homeMenuWidgetTitle.copyWith(fontSize: 16),
               ),
             ],
           ),
@@ -80,21 +74,21 @@ class NutritionProgressCard extends StatelessWidget {
                 nutrition.carbs,
                 goals.carbsGoal,
                 carbsProgress,
-                Colors.orange,
+                yellowThree,
               ),
               _buildNutrientProgress(
                 '단백질',
                 nutrition.protein,
                 goals.proteinGoal,
                 proteinProgress,
-                Colors.blue,
+                blueTwo,
               ),
               _buildNutrientProgress(
                 '지방',
                 nutrition.fat,
                 goals.fatGoal,
                 fatProgress,
-                Colors.pink,
+                pinkOne,
               ),
             ],
           ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 import 'register_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -61,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: dalgeurakGrayOne,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -76,15 +78,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                      gradient: LinearGradient(
+                        colors: [dalgeurakBlueOne, blueFour],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4CAF50).withOpacity(0.3),
+                          color: dalgeurakBlueOne.withOpacity(0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -92,24 +94,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: Column(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.restaurant_menu,
                           size: 64,
                           color: Colors.white,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           '영양소 추적기',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: loginTitle.copyWith(color: Colors.white, fontSize: 32),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           '건강한 식습관 관리',
-                          style: TextStyle(
+                          style: loginSubTitle.copyWith(
                             color: Colors.white.withOpacity(0.9),
                             fontSize: 16,
                           ),
@@ -124,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.05),
@@ -136,13 +134,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
+                        Text(
                           '로그인',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2C3E50),
-                          ),
+                          style: pageTitle1.copyWith(fontSize: 24),
                         ),
                         const SizedBox(height: 24),
 
@@ -150,9 +144,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
+                          style: loginTextFieldText,
                           decoration: InputDecoration(
                             labelText: '이메일',
-                            prefixIcon: const Icon(Icons.email_outlined),
+                            prefixIcon: Icon(Icons.email_outlined, color: dalgeurakBlueOne),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -173,14 +168,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
+                          style: loginTextFieldText,
                           decoration: InputDecoration(
                             labelText: '비밀번호',
-                            prefixIcon: const Icon(Icons.lock_outlined),
+                            prefixIcon: Icon(Icons.lock_outlined, color: dalgeurakBlueOne),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
+                                color: dalgeurakGrayFour,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -208,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ElevatedButton(
                           onPressed: _isLoading ? null : _handleLogin,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4CAF50),
+                            backgroundColor: dalgeurakBlueOne,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -225,13 +222,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ),
                                 )
-                              : const Text(
+                              : Text(
                                   '로그인',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
+                                  style: btnTitle2.copyWith(color: Colors.white, fontSize: 16),
                                 ),
                         ),
                       ],

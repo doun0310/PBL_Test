@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../models/meal_entry.dart';
 import '../models/user_goals.dart';
 import '../services/meal_tracking_service.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 import 'add_meal_screen.dart';
 import 'profile_screen.dart';
 import 'statistics_screen.dart';
@@ -62,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: dalgeurakGrayOne,
       body: _buildBody(),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
@@ -129,17 +131,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       floating: true,
       backgroundColor: Colors.white,
       elevation: 0,
-      title: const Text(
-        'Diet Tracker',
-        style: TextStyle(
-          color: Color(0xFF2C3E50),
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
+      title: Text(
+        '영양소 추적기',
+        style: homeTitle.copyWith(fontSize: 24),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_outlined, color: Color(0xFF2C3E50)),
+          icon: Icon(Icons.notifications_outlined, color: dalgeurakGrayFour),
           onPressed: () {},
         ),
       ],
@@ -155,7 +153,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -171,16 +169,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             isToday
                 ? '오늘'
                 : DateFormat('yyyy년 MM월 dd일 (E)', 'ko_KR').format(_selectedDate),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2C3E50),
-            ),
+            style: cardTitle,
           ),
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.chevron_left),
+                icon: Icon(Icons.chevron_left, color: dalgeurakBlueOne),
                 onPressed: () {
                   setState(() {
                     _selectedDate = _selectedDate.subtract(const Duration(days: 1));
@@ -189,7 +183,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.calendar_today_outlined),
+                icon: Icon(Icons.calendar_today_outlined, color: dalgeurakBlueOne),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -202,7 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.chevron_right),
+                icon: Icon(Icons.chevron_right, color: dalgeurakBlueOne),
                 onPressed: () {
                   if (!isToday) {
                     setState(() {
@@ -256,15 +250,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+          gradient: LinearGradient(
+            colors: [dalgeurakBlueOne, blueFour],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF9800).withOpacity(0.3),
+              color: dalgeurakBlueOne.withOpacity(0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -289,13 +283,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '식사 추가하기',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: homeMenuWidgetTitle.copyWith(fontSize: 18),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -325,13 +315,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '오늘의 식사',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2C3E50),
-          ),
+          style: homeTitle,
         ),
         const SizedBox(height: 16),
         if (_todayMeals.isEmpty)
@@ -354,8 +340,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: grayEleven),
       ),
       child: Center(
         child: Column(
@@ -363,23 +349,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Icon(
               Icons.restaurant_menu_outlined,
               size: 64,
-              color: Colors.grey[400],
+              color: grayEleven,
             ),
             const SizedBox(height: 16),
             Text(
               '아직 기록된 식사가 없습니다',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: cardSubTitle,
             ),
             const SizedBox(height: 8),
             Text(
               '첫 식사를 추가해보세요!',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
+              style: cardSubTitle.copyWith(color: grayTen),
             ),
           ],
         ),
@@ -420,6 +400,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(15),
+          topRight: Radius.circular(15),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -457,7 +441,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4CAF50).withOpacity(0.1) : null,
+          color: isSelected ? dalgeurakBlueOne.withOpacity(0.1) : null,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -465,15 +449,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Icon(
               isSelected ? filledIcon : outlinedIcon,
-              color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[600],
+              color: isSelected ? dalgeurakBlueOne : grayEleven,
               size: 28,
             ),
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 12,
-                color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[600],
+              style: homeBottomNavigationBarLabel.copyWith(
+                color: isSelected ? dalgeurakBlueOne : grayEleven,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

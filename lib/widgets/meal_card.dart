@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/meal_entry.dart';
+import '../themes/color_theme.dart';
+import '../themes/text_theme.dart';
 import 'package:intl/intl.dart';
 
 class MealCard extends StatelessWidget {
@@ -19,11 +21,11 @@ class MealCard extends StatelessWidget {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -41,19 +43,12 @@ class MealCard extends StatelessWidget {
                         children: [
                           Text(
                             meal.mealType.displayName,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2C3E50),
-                            ),
+                            style: mealTitle,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             DateFormat('HH:mm').format(meal.timestamp),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
+                            style: mealSubTitle,
                           ),
                         ],
                       ),
@@ -61,7 +56,7 @@ class MealCard extends StatelessWidget {
                   ),
                   if (onDelete != null)
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      icon: Icon(Icons.delete_outline, color: redTwo),
                       onPressed: onDelete,
                     ),
                 ],
@@ -76,16 +71,12 @@ class MealCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             '${foodEntry.foodItem.name} (${foodEntry.servingSize.toInt()}${foodEntry.foodItem.unit})',
-                            style: const TextStyle(fontSize: 14),
+                            style: cardContent,
                           ),
                         ),
                         Text(
                           '${foodEntry.totalCalories.toInt()} kcal',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: cardContent.copyWith(color: dalgeurakGrayFour),
                         ),
                       ],
                     ),
@@ -95,7 +86,7 @@ class MealCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: dalgeurakBlueOne.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -138,19 +129,19 @@ class MealCard extends StatelessWidget {
     switch (meal.mealType) {
       case MealType.breakfast:
         icon = Icons.wb_sunny;
-        color = Colors.orange;
+        color = yellowThree;
         break;
       case MealType.lunch:
         icon = Icons.wb_sunny_outlined;
-        color = Colors.amber;
+        color = yellowOne;
         break;
       case MealType.dinner:
         icon = Icons.nights_stay;
-        color = Colors.indigo;
+        color = blueFive;
         break;
       case MealType.snack:
         icon = Icons.cookie_outlined;
-        color = Colors.pink;
+        color = pinkOne;
         break;
     }
 
@@ -169,10 +160,7 @@ class MealCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey[600],
-          ),
+          style: cardSubTitle.copyWith(fontSize: 11),
         ),
         const SizedBox(height: 4),
         RichText(
@@ -180,18 +168,11 @@ class MealCard extends StatelessWidget {
             children: [
               TextSpan(
                 text: value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
-                ),
+                style: cardTitle.copyWith(fontSize: 16),
               ),
               TextSpan(
                 text: ' $unit',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[600],
-                ),
+                style: cardSubTitle.copyWith(fontSize: 11),
               ),
             ],
           ),

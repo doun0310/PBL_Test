@@ -3,6 +3,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
+import 'themes/color_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,27 +20,28 @@ class DietTrackingApp extends StatelessWidget {
       title: '영양소 추적기',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.green,
-        primaryColor: const Color(0xFF4CAF50),
+        primarySwatch: Colors.blue,
+        primaryColor: dalgeurakBlueOne,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4CAF50),
-          primary: const Color(0xFF4CAF50),
+          seedColor: dalgeurakBlueOne,
+          primary: dalgeurakBlueOne,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-        appBarTheme: const AppBarTheme(
+        scaffoldBackgroundColor: dalgeurakGrayOne,
+        appBarTheme: AppBarTheme(
           backgroundColor: Colors.white,
-          foregroundColor: Color(0xFF2C3E50),
+          foregroundColor: const Color(0xFF2C3E50),
           elevation: 0,
         ),
         cardTheme: CardThemeData(
           elevation: 2,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(15),
           ),
+          color: Colors.white,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: dalgeurakBlueOne,
             foregroundColor: Colors.white,
             elevation: 2,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -50,7 +52,7 @@ class DietTrackingApp extends StatelessWidget {
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFF4CAF50),
+            foregroundColor: dalgeurakBlueOne,
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -59,7 +61,7 @@ class DietTrackingApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+            borderSide: BorderSide(color: dalgeurakBlueOne, width: 2),
           ),
         ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -78,11 +80,11 @@ class AuthWrapper extends StatelessWidget {
       future: AuthService.isLoggedIn(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            backgroundColor: Color(0xFFF5F5F5),
+          return Scaffold(
+            backgroundColor: dalgeurakGrayOne,
             body: Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                valueColor: AlwaysStoppedAnimation<Color>(dalgeurakBlueOne),
               ),
             ),
           );
