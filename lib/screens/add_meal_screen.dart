@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:intl/intl.dart';
 import '../models/meal_entry.dart';
+import '../models/food_item.dart';
 import '../services/meal_tracking_service.dart';
 import 'food_search_screen.dart';
 import 'photo_analysis_screen.dart';
 
 class AddMealScreen extends StatefulWidget {
   final VoidCallback? onMealAdded;
+  final DateTime? initialDate;
 
-  const AddMealScreen({super.key, this.onMealAdded});
+  const AddMealScreen({
+    super.key, 
+    this.onMealAdded,
+    this.initialDate,
+  });
 
   @override
   State<AddMealScreen> createState() => _AddMealScreenState();
@@ -19,6 +26,13 @@ class _AddMealScreenState extends State<AddMealScreen> {
   MealType _selectedMealType = MealType.breakfast;
   final List<FoodItemEntry> _selectedFoods = [];
   String? _photoPath;
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.initialDate ?? DateTime.now();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +63,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            _buildDateSelector(),
             _buildMealTypeSelector(),
             Expanded(
               child: _selectedFoods.isEmpty
@@ -102,6 +117,85 @@ class _AddMealScreenState extends State<AddMealScreen> {
         }).toList(),
       ),
     );
+  }
+
+  Widget _buildDateSelector() {
+    final isToday = _selectedDate.year == DateTime.now().year &&
+        _selectedDate.month == DateTime.now().month &&
+        _selectedDate.day == DateTime.now().day;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            isToday
+                ? '오늘'
+                : DateFormat('yyyy년 MM월 dd일 (E)', 'ko_KR').format(_selectedDate),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2C3E50),
+            ),
+          ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: () {
+                  setState(() {
+                    _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+                  });
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.calendar_today_outlined),
+                onPressed: _selectDate,
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                onPressed: () {
+                  if (!isToday) {
+                    setState(() {
+                      _selectedDate = _selectedDate.add(const Duration(days: 1));
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now(),
+      locale: const Locale('ko', 'KR'),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
   }
 
   Widget _buildAddOptions() {
@@ -387,7 +481,13 @@ class _AddMealScreenState extends State<AddMealScreen> {
 
     final meal = MealEntry(
       id: const Uuid().v4(),
-      timestamp: DateTime.now(),
+      timestamp: DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+        DateTime.now().hour,
+        DateTime.now().minute,
+      ),
       mealType: _selectedMealType,
       foodItems: _selectedFoods,
       photoPath: _photoPath,

@@ -74,6 +74,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return _buildHomeView();
       case 1:
         return AddMealScreen(
+          initialDate: _selectedDate,
           onMealAdded: () {
             _loadData();
             setState(() => _selectedIndex = 0);
@@ -129,7 +130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.white,
       elevation: 0,
       title: const Text(
-        '영양소 추적기',
+        'Diet Tracker',
         style: TextStyle(
           color: Color(0xFF2C3E50),
           fontSize: 24,
@@ -244,6 +245,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => AddMealScreen(
+              initialDate: _selectedDate,
               onMealAdded: () {
                 _loadData();
               },
