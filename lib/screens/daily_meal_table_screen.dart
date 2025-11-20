@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/meal_entry.dart';
 import '../models/user_goals.dart';
 import '../services/meal_tracking_service.dart';
+import '../themes/color_theme.dart';
 
 class DailyMealTableScreen extends StatefulWidget {
   final DateTime selectedDate;
@@ -175,8 +176,8 @@ class _DailyMealTableScreenState extends State<DailyMealTableScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFF4CAF50),
+            decoration: BoxDecoration(
+              color: yellowFive,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
@@ -400,7 +401,7 @@ class _DailyMealTableScreenState extends State<DailyMealTableScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: isOverGoal ? Colors.red[400] : const Color(0xFF4CAF50),
+                    color: isOverGoal ? Colors.red[400] : dalgeurakBlueOne,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -422,7 +423,7 @@ class _DailyMealTableScreenState extends State<DailyMealTableScreen> {
             value: progress.clamp(0.0, 1.0),
             backgroundColor: Colors.grey[200],
             valueColor: AlwaysStoppedAnimation<Color>(
-              isOverGoal ? Colors.red[400]! : const Color(0xFF4CAF50),
+              isOverGoal ? Colors.red[400]! : dalgeurakBlueOne,
             ),
             minHeight: 8,
           ),

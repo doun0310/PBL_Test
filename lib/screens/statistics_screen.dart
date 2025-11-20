@@ -55,7 +55,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           '통계',
@@ -120,7 +120,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4CAF50) : Colors.transparent,
+          color: isSelected ? yellowFive : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -403,10 +403,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
           Text(
             '${(food['calories'] as num).toInt()} kcal',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF4CAF50),
+              color: dalgeurakBlueOne,
             ),
           ),
         ],
