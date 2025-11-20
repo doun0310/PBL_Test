@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/user_goals.dart';
+import '../themes/color_theme.dart';
 
 class NutritionProgressCard extends StatelessWidget {
   final DailyNutrition nutrition;
@@ -21,15 +22,15 @@ class NutritionProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+        gradient: LinearGradient(
+          colors: [yellowFive, yellowSix],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.3),
+            color: yellowFive.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
