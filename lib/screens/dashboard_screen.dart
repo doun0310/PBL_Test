@@ -74,6 +74,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return _buildHomeView();
       case 1:
         return AddMealScreen(
+          initialDate: _selectedDate,
           onMealAdded: () {
             _loadData();
             setState(() => _selectedIndex = 0);
@@ -244,6 +245,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => AddMealScreen(
+              initialDate: _selectedDate,
               onMealAdded: () {
                 _loadData();
               },
