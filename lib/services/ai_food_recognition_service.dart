@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import '../models/food_item.dart';
