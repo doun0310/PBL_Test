@@ -37,6 +37,33 @@ dependencies:
   # UUID 생성
   uuid: ^4.3.3
 
+  # Firebase 관련 패키지
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  firebase_storage: ^11.5.6
+
+  # ML 및 이미지 처리
+  tflite_flutter: ^0.10.4
+  google_ml_kit: ^0.16.3
+
+  # OCR
+  google_mlkit_text_recognition: ^0.11.0
+
+  # 로컬 알림
+  flutter_local_notifications: ^17.0.0
+  timezone: ^0.9.2
+
+  # 다국어 지원
+  flutter_localizations:
+    sdk: flutter
+
+  # 공유 기능
+  share_plus: ^7.2.1
+
+  # URL 런처 (외부 링크용)
+  url_launcher: ^6.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

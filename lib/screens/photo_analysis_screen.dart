@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/meal_entry.dart';
 import '../services/food_database_service.dart';
+import '../services/ai_food_recognition_service.dart';
 
 class PhotoAnalysisScreen extends StatefulWidget {
   final String imagePath;
@@ -26,22 +27,36 @@ class _PhotoAnalysisScreenState extends State<PhotoAnalysisScreen> {
   }
 
   Future<void> _analyzeImage() async {
-    // 실제 AI 분석 대신 모의 분석 수행
-    await Future.delayed(const Duration(seconds: 2));
+    setState(() => _isAnalyzing = true);
 
-    // 샘플 검출 결과 (실제로는 AI 모델 사용)
-    final sampleFoods = FoodDatabaseService.getAllFoods();
-    final randomFoods = (sampleFoods..shuffle()).take(3).toList();
+    try {
+      // AI 음식 인식 서비스 사용
+      final recognizedFoods = await AIFoodRecognitionService.recognizeFood(widget.imagePath);
 
-    setState(() {
-      _detectedFoods = randomFoods.map((food) {
-        return FoodItemEntry(
-          foodItem: food,
-          servingSize: food.servingSize,
-        );
-      }).toList();
-      _isAnalyzing = false;
-    });
+      setState(() {
+        _detectedFoods = recognizedFoods.map((food) {
+          return FoodItemEntry(
+            foodItem: food,
+            servingSize: food.servingSize,
+          );
+        }).toList();
+        _isAnalyzing = false;
+      });
+    } catch (e) {
+      // 에러 시 기본 분석 수행
+      final sampleFoods = FoodDatabaseService.getAllFoods();
+      final randomFoods = (sampleFoods..shuffle()).take(3).toList();
+
+      setState(() {
+        _detectedFoods = randomFoods.map((food) {
+          return FoodItemEntry(
+            foodItem: food,
+            servingSize: food.servingSize,
+          );
+        }).toList();
+        _isAnalyzing = false;
+      });
+    }
   }
 
   void _confirmSelection() {

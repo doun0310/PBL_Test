@@ -190,4 +190,16 @@ class AuthService {
     final usersJson = json.encode(users.map((u) => u.toJson()).toList());
     await prefs.setString(_usersKey, usersJson);
   }
+
+  // 현재 사용자 ID 가져오기
+  static Future<String?> getCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_currentUserKey);
+  }
+
+  // 현재 사용자 이름 가져오기
+  static Future<String?> getCurrentUserName() async {
+    final user = await getCurrentUser();
+    return user?.name;
+  }
 }

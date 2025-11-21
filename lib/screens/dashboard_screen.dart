@@ -7,6 +7,10 @@ import 'add_meal_screen.dart';
 import 'profile_screen.dart';
 import 'statistics_screen.dart';
 import 'daily_meal_table_screen.dart';
+import 'exercise_tracking_screen.dart';
+import 'community_screen.dart';
+import 'recipe_screen.dart';
+import 'settings_screen.dart';
 import '../widgets/nutrition_progress_card.dart';
 import '../widgets/meal_card.dart';
 
@@ -83,6 +87,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 2:
         return const StatisticsScreen();
       case 3:
+        return const ExerciseTrackingScreen();
+      case 4:
         return const ProfileScreen();
       default:
         return _buildHomeView();
@@ -111,6 +117,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             goals: _userGoals,
                           ),
                           const SizedBox(height: 24),
+                          _buildQuickAccessButtons(),
+                          const SizedBox(height: 16),
                           _buildRecommendationButton(),
                           const SizedBox(height: 16),
                           _buildMealsSection(),
@@ -140,7 +148,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.notifications_outlined, color: Color(0xFF2C3E50)),
-          onPressed: () {},
+          onPressed: () {
+            // 알림 관련 액션
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.settings_outlined, color: Color(0xFF2C3E50)),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+          },
         ),
       ],
     );
@@ -234,6 +253,97 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
       _loadData();
     }
+  }
+
+  Widget _buildQuickAccessButtons() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '빠른 접근',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildQuickAccessCard(
+                '커뮤니티',
+                Icons.forum,
+                Colors.blue,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CommunityScreen()),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildQuickAccessCard(
+                '레시피',
+                Icons.restaurant_menu,
+                Colors.orange,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RecipeRecommendationScreen()),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildQuickAccessCard(
+                '설정',
+                Icons.settings,
+                Colors.grey,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAccessCard(String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildRecommendationButton() {
@@ -437,7 +547,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildNavItem(Icons.home_outlined, Icons.home, '홈', 0),
               _buildNavItem(Icons.add_circle_outline, Icons.add_circle, '추가', 1),
               _buildNavItem(Icons.bar_chart_outlined, Icons.bar_chart, '통계', 2),
-              _buildNavItem(Icons.person_outline, Icons.person, '프로필', 3),
+              _buildNavItem(Icons.directions_run_outlined, Icons.directions_run, '운동', 3),
+              _buildNavItem(Icons.person_outline, Icons.person, '프로필', 4),
             ],
           ),
         ),
