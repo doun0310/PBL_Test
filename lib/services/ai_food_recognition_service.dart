@@ -34,7 +34,6 @@ class AIFoodRecognitionService {
 
       return recognizedFoods;
     } catch (e) {
-      print('AI 음식 인식 에러: $e');
       // 에러 시 시뮬레이션 결과 반환
       return _simulateRecognition();
     }

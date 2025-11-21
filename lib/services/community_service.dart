@@ -63,11 +63,11 @@ class CommunityService {
     posts.insert(0, post);
     await _savePosts(posts);
 
-    // Firebase에도 저장
+    // Firebase에도 저장 (선택사항)
     try {
       await _firestore.collection('community_posts').doc(post.id).set(post.toJson());
     } catch (e) {
-      print('Firebase 저장 실패: $e');
+      // Firebase 저장 실패는 무시 (로컬 저장은 완료됨)
     }
   }
 
@@ -79,11 +79,11 @@ class CommunityService {
       posts[index] = post;
       await _savePosts(posts);
 
-      // Firebase에도 업데이트
+      // Firebase에도 업데이트 (선택사항)
       try {
         await _firestore.collection('community_posts').doc(post.id).update(post.toJson());
       } catch (e) {
-        print('Firebase 업데이트 실패: $e');
+        // Firebase 업데이트 실패는 무시 (로컬 저장은 완료됨)
       }
     }
   }
@@ -94,11 +94,11 @@ class CommunityService {
     posts.removeWhere((p) => p.id == postId);
     await _savePosts(posts);
 
-    // Firebase에서도 삭제
+    // Firebase에서도 삭제 (선택사항)
     try {
       await _firestore.collection('community_posts').doc(postId).delete();
     } catch (e) {
-      print('Firebase 삭제 실패: $e');
+      // Firebase 삭제 실패는 무시 (로컬 삭제는 완료됨)
     }
   }
 

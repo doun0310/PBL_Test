@@ -13,8 +13,8 @@ class OCRService {
 
       return _parseNutritionInfo(recognizedText.text);
     } catch (e) {
-      print('OCR 에러: $e');
-      return null;
+      // 에러를 상위 호출자에게 전달
+      rethrow;
     }
   }
 
@@ -90,7 +90,7 @@ class OCRService {
     return null;
   }
 
-  // 영양성분표에서 FoodItem 생성
+  // 음식 카테고리 분류 (내부 메서드)
   static FoodItem? createFoodItemFromScan(
     String name,
     Map<String, dynamic> nutritionInfo,
@@ -107,8 +107,8 @@ class OCRService {
         category: '스캔',
       );
     } catch (e) {
-      print('FoodItem 생성 에러: $e');
-      return null;
+      // 에러를 상위 호출자에게 전달
+      rethrow;
     }
   }
 
@@ -124,7 +124,7 @@ class OCRService {
       final recognizedText = await _textRecognizer.processImage(inputImage);
       return recognizedText.text;
     } catch (e) {
-      print('텍스트 인식 에러: $e');
+      // 에러 발생 시 빈 문자열 반환
       return '';
     }
   }

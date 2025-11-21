@@ -39,8 +39,8 @@ class NotificationService {
 
   // 알림 클릭 시 처리
   static void _onNotificationTapped(NotificationResponse response) {
-    // 알림 클릭 시 처리 로직
-    print('알림 클릭: ${response.payload}');
+    // 알림 클릭 시 처리 로직 (필요시 구현)
+    // 예: 특정 화면으로 이동 등
   }
 
   // 권한 요청

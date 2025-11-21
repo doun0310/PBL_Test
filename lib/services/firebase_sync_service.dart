@@ -14,7 +14,9 @@ class FirebaseSyncService {
 
   // 식사 기록 동기화 (업로드)
   static Future<void> syncMealsToCloud() async {
-    if (currentUserId == null) return;
+    if (currentUserId == null) {
+      throw Exception('사용자가 로그인되어 있지 않습니다.');
+    }
 
     try {
       final meals = await MealTrackingService.getAllMeals();
@@ -32,14 +34,15 @@ class FirebaseSyncService {
 
       await batch.commit();
     } catch (e) {
-      print('식사 기록 동기화 실패: $e');
-      rethrow;
+      throw Exception('식사 기록 동기화 실패: $e');
     }
   }
 
   // 식사 기록 복원 (다운로드)
   static Future<void> restoreMealsFromCloud() async {
-    if (currentUserId == null) return;
+    if (currentUserId == null) {
+      throw Exception('사용자가 로그인되어 있지 않습니다.');
+    }
 
     try {
       final snapshot = await _firestore
@@ -57,14 +60,15 @@ class FirebaseSyncService {
         await MealTrackingService.addMeal(meal);
       }
     } catch (e) {
-      print('식사 기록 복원 실패: $e');
-      rethrow;
+      throw Exception('식사 기록 복원 실패: $e');
     }
   }
 
   // 사용자 목표 동기화
   static Future<void> syncGoalsToCloud(UserGoals goals) async {
-    if (currentUserId == null) return;
+    if (currentUserId == null) {
+      throw Exception('사용자가 로그인되어 있지 않습니다.');
+    }
 
     try {
       await _firestore
@@ -72,8 +76,7 @@ class FirebaseSyncService {
           .doc(currentUserId)
           .set({'goals': goals.toJson()}, SetOptions(merge: true));
     } catch (e) {
-      print('목표 동기화 실패: $e');
-      rethrow;
+      throw Exception('목표 동기화 실패: $e');
     }
   }
 
@@ -99,7 +102,9 @@ class FirebaseSyncService {
 
   // 운동 기록 동기화
   static Future<void> syncExercisesToCloud(List<ExerciseEntry> exercises) async {
-    if (currentUserId == null) return;
+    if (currentUserId == null) {
+      throw Exception('사용자가 로그인되어 있지 않습니다.');
+    }
 
     try {
       final batch = _firestore.batch();
@@ -116,8 +121,7 @@ class FirebaseSyncService {
 
       await batch.commit();
     } catch (e) {
-      print('운동 기록 동기화 실패: $e');
-      rethrow;
+      throw Exception('운동 기록 동기화 실패: $e');
     }
   }
 
