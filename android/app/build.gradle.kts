@@ -24,10 +24,11 @@ android {
         applicationId = "com.example.diet_tracking_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 21  // Required for Firebase and ML Kit
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true  // Required for Firebase
     }
 
     buildTypes {
