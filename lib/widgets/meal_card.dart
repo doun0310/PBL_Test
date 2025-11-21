@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/meal_entry.dart';
+import '../services/sharing_service.dart';
 import 'package:intl/intl.dart';
 
 class MealCard extends StatelessWidget {
@@ -59,11 +60,21 @@ class MealCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (onDelete != null)
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      onPressed: onDelete,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.share, color: Color(0xFF4CAF50)),
+                        onPressed: () => SharingService.shareMeal(meal),
+                        tooltip: '공유',
+                      ),
+                      if (onDelete != null)
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: onDelete,
+                        ),
+                    ],
+                  ),
                 ],
               ),
               const SizedBox(height: 16),

@@ -7,6 +7,7 @@ import '../models/food_item.dart';
 import '../services/meal_tracking_service.dart';
 import 'food_search_screen.dart';
 import 'photo_analysis_screen.dart';
+import 'ocr_scan_screen.dart';
 
 class AddMealScreen extends StatefulWidget {
   final VoidCallback? onMealAdded;
@@ -452,10 +453,22 @@ class _AddMealScreenState extends State<AddMealScreen> {
     }
   }
 
-  void _scanNutritionLabel() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('영양성분표 스캔 기능은 곧 추가됩니다')),
+  Future<void> _scanNutritionLabel() async {
+    final result = await Navigator.push<FoodItem>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const OCRScanScreen(),
+      ),
     );
+
+    if (result != null && mounted) {
+      setState(() {
+        _selectedFoods.add(FoodItemEntry(
+          foodItem: result,
+          servingSize: result.servingSize,
+        ));
+      });
+    }
   }
 
   Future<void> _searchFood() async {

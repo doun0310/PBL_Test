@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
@@ -13,6 +14,15 @@ import 'services/notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ko_KR', null);
+  
+  // Firebase 초기화 (선택적)
+  try {
+    await Firebase.initializeApp();
+    debugPrint('Firebase initialized successfully');
+  } catch (e) {
+    debugPrint('Firebase initialization failed: $e');
+    debugPrint('App will continue without Firebase features');
+  }
   
   // 서비스 초기화
   await NotificationService.initialize();
