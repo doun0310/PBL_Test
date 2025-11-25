@@ -177,7 +177,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.bar_chart, size: 64, color: Colors.grey[400]),
+          Icon(Icons.show_chart, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             '데이터가 없습니다',
@@ -189,31 +189,67 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildBarChart() {
-    return BarChart(
-      BarChartData(
-        alignment: BarChartAlignment.spaceAround,
+    return LineChart(
+      LineChartData(
+        minY: 0,
         maxY: _getMaxY(),
-        barTouchData: BarTouchData(enabled: true),
+        lineTouchData: LineTouchData(
+          enabled: true,
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((spot) {
+                String label;
+                switch (spot.barIndex) {
+                  case 0:
+                    label = '탄수화물';
+                    break;
+                  case 1:
+                    label = '단백질';
+                    break;
+                  case 2:
+                    label = '지방';
+                    break;
+                  default:
+                    label = '';
+                }
+                return LineTooltipItem(
+                  '$label: ${spot.y.toInt()}g',
+                  TextStyle(
+                    color: spot.bar.color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ),
         titlesData: FlTitlesData(
           show: true,
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              reservedSize: 30,
               getTitlesWidget: (value, meta) {
                 if (_isWeekly) {
                   const days = ['월', '화', '수', '목', '금', '토', '일'];
                   if (value.toInt() >= 0 && value.toInt() < days.length) {
-                    return Text(
-                      days[value.toInt()],
-                      style: const TextStyle(fontSize: 12),
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        days[value.toInt()],
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     );
                   }
                 } else {
                   // 월간은 날짜만 표시
                   if (value.toInt() % 5 == 0) {
-                    return Text(
-                      '${value.toInt() + 1}',
-                      style: const TextStyle(fontSize: 10),
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        '${value.toInt() + 1}',
+                        style: const TextStyle(fontSize: 10),
+                      ),
                     );
                   }
                 }
@@ -221,8 +257,17 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               },
             ),
           ),
-          leftTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (value, meta) {
+                return Text(
+                  '${value.toInt()}',
+                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                );
+              },
+            ),
           ),
           topTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
@@ -231,9 +276,25 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             sideTitles: SideTitles(showTitles: false),
           ),
         ),
-        gridData: const FlGridData(show: false),
-        borderData: FlBorderData(show: false),
-        barGroups: _buildBarGroups(),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: _getMaxY() / 4,
+          getDrawingHorizontalLine: (value) {
+            return FlLine(
+              color: Colors.grey[300],
+              strokeWidth: 1,
+            );
+          },
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border(
+            bottom: BorderSide(color: Colors.grey[300]!, width: 1),
+            left: BorderSide(color: Colors.grey[300]!, width: 1),
+          ),
+        ),
+        lineBarsData: _buildLineBarsData(),
       ),
     );
   }
@@ -245,35 +306,93 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       if (nutrition.protein > max) max = nutrition.protein;
       if (nutrition.fat > max) max = nutrition.fat;
     }
-    return max * 1.2;
+    return max > 0 ? max * 1.2 : 100;
   }
 
-  List<BarChartGroupData> _buildBarGroups() {
-    return _nutritionData.asMap().entries.map((entry) {
-      final index = entry.key;
-      final nutrition = entry.value;
-
-      return BarChartGroupData(
-        x: index,
-        barRods: [
-          BarChartRodData(
-            toY: nutrition.carbs,
-            color: Colors.orange,
-            width: _isWeekly ? 8 : 3,
-          ),
-          BarChartRodData(
-            toY: nutrition.protein,
-            color: Colors.blue,
-            width: _isWeekly ? 8 : 3,
-          ),
-          BarChartRodData(
-            toY: nutrition.fat,
-            color: Colors.pink,
-            width: _isWeekly ? 8 : 3,
-          ),
-        ],
-      );
+  List<LineChartBarData> _buildLineBarsData() {
+    // 탄수화물 라인
+    final carbsSpots = _nutritionData.asMap().entries.map((entry) {
+      return FlSpot(entry.key.toDouble(), entry.value.carbs);
     }).toList();
+
+    // 단백질 라인
+    final proteinSpots = _nutritionData.asMap().entries.map((entry) {
+      return FlSpot(entry.key.toDouble(), entry.value.protein);
+    }).toList();
+
+    // 지방 라인
+    final fatSpots = _nutritionData.asMap().entries.map((entry) {
+      return FlSpot(entry.key.toDouble(), entry.value.fat);
+    }).toList();
+
+    return [
+      LineChartBarData(
+        spots: carbsSpots,
+        isCurved: true,
+        color: Colors.orange,
+        barWidth: 3,
+        isStrokeCapRound: true,
+        dotData: FlDotData(
+          show: true,
+          getDotPainter: (spot, percent, barData, index) {
+            return FlDotCirclePainter(
+              radius: 4,
+              color: Colors.orange,
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            );
+          },
+        ),
+        belowBarData: BarAreaData(
+          show: true,
+          color: Colors.orange.withOpacity(0.1),
+        ),
+      ),
+      LineChartBarData(
+        spots: proteinSpots,
+        isCurved: true,
+        color: Colors.blue,
+        barWidth: 3,
+        isStrokeCapRound: true,
+        dotData: FlDotData(
+          show: true,
+          getDotPainter: (spot, percent, barData, index) {
+            return FlDotCirclePainter(
+              radius: 4,
+              color: Colors.blue,
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            );
+          },
+        ),
+        belowBarData: BarAreaData(
+          show: true,
+          color: Colors.blue.withOpacity(0.1),
+        ),
+      ),
+      LineChartBarData(
+        spots: fatSpots,
+        isCurved: true,
+        color: Colors.pink,
+        barWidth: 3,
+        isStrokeCapRound: true,
+        dotData: FlDotData(
+          show: true,
+          getDotPainter: (spot, percent, barData, index) {
+            return FlDotCirclePainter(
+              radius: 4,
+              color: Colors.pink,
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            );
+          },
+        ),
+        belowBarData: BarAreaData(
+          show: true,
+          color: Colors.pink.withOpacity(0.1),
+        ),
+      ),
+    ];
   }
 
   Widget _buildChartLegend() {
