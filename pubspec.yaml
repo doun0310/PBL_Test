@@ -1,7 +1,7 @@
 name: diet_tracking_app
-description: AI 기반 식단 및 칼로리 추적 애플리케이션
+description: AI 기반 식단 및 칼로리 추적 애플리케이션 (YOLO v11 + EasyOCR + Collaborative Filtering)
 publish_to: 'none'
-version: 2.0.0+1
+version: 3.0.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # HTTP 요청
+  # HTTP 요청 (EasyOCR API 통신용)
   http: ^1.1.0
 
   # 로컬 저장소
@@ -43,12 +43,8 @@ dependencies:
   cloud_firestore: ^4.13.6
   firebase_storage: ^11.5.6
 
-  # ML 및 이미지 처리
+  # YOLO v11 추론 엔진 (TensorFlow Lite)
   tflite_flutter: ^0.10.4
-  google_ml_kit: ^0.16.3
-
-  # OCR
-  google_mlkit_text_recognition: ^0.11.0
 
   # 로컬 알림
   flutter_local_notifications: ^17.0.0
@@ -75,3 +71,4 @@ flutter:
   
   assets:
     - assets/images/
+    - assets/models/
