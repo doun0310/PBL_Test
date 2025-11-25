@@ -1,6 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -14,7 +14,7 @@ class NotificationService {
   static Future<void> initialize() async {
     if (_initialized) return;
 
-    tz.initializeTimeZones();
+    tz_data.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');

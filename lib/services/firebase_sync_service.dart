@@ -95,7 +95,7 @@ class FirebaseSyncService {
       }
       return null;
     } catch (e) {
-      print('목표 복원 실패: $e');
+      // 목표 복원 실패 시 null 반환
       return null;
     }
   }
@@ -140,7 +140,7 @@ class FirebaseSyncService {
           .map((doc) => ExerciseEntry.fromJson(doc.data()))
           .toList();
     } catch (e) {
-      print('운동 기록 복원 실패: $e');
+      // 운동 기록 복원 실패 시 빈 리스트 반환
       return [];
     }
   }

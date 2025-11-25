@@ -97,7 +97,6 @@ class ThemeService extends ChangeNotifier {
         seedColor: const Color(0xFF66BB6A),
         primary: const Color(0xFF66BB6A),
         brightness: Brightness.dark,
-        background: const Color(0xFF121212),
         surface: const Color(0xFF1E1E1E),
       ),
       scaffoldBackgroundColor: const Color(0xFF121212),

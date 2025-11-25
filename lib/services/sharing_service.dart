@@ -12,13 +12,13 @@ class SharingService {
   // 식사 텍스트 포맷팅
   static String _formatMealText(MealEntry meal) {
     final buffer = StringBuffer();
-    buffer.writeln('🍽️ ${meal.mealType} 식사 기록');
+    buffer.writeln('🍽️ ${meal.mealType.displayName} 식사 기록');
     buffer.writeln('');
     buffer.writeln('📅 ${_formatDate(meal.timestamp)}');
     buffer.writeln('');
     buffer.writeln('🥘 음식 목록:');
     
-    for (var foodEntry in meal.foods) {
+    for (var foodEntry in meal.foodItems) {
       buffer.writeln('• ${foodEntry.foodItem.name} (${foodEntry.servingSize.toStringAsFixed(0)}g)');
     }
     
