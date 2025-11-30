@@ -310,25 +310,26 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   List<LineChartBarData> _buildLineBarsData() {
-    // 탄수화물 라인
+    // 탄수화물 라인 - 값을 0 이상으로 클램프
     final carbsSpots = _nutritionData.asMap().entries.map((entry) {
-      return FlSpot(entry.key.toDouble(), entry.value.carbs);
+      return FlSpot(entry.key.toDouble(), entry.value.carbs.clamp(0, double.infinity));
     }).toList();
 
-    // 단백질 라인
+    // 단백질 라인 - 값을 0 이상으로 클램프
     final proteinSpots = _nutritionData.asMap().entries.map((entry) {
-      return FlSpot(entry.key.toDouble(), entry.value.protein);
+      return FlSpot(entry.key.toDouble(), entry.value.protein.clamp(0, double.infinity));
     }).toList();
 
-    // 지방 라인
+    // 지방 라인 - 값을 0 이상으로 클램프
     final fatSpots = _nutritionData.asMap().entries.map((entry) {
-      return FlSpot(entry.key.toDouble(), entry.value.fat);
+      return FlSpot(entry.key.toDouble(), entry.value.fat.clamp(0, double.infinity));
     }).toList();
 
     return [
       LineChartBarData(
         spots: carbsSpots,
         isCurved: true,
+        preventCurveOverShooting: true,
         color: Colors.orange,
         barWidth: 3,
         isStrokeCapRound: true,
@@ -346,11 +347,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         belowBarData: BarAreaData(
           show: true,
           color: Colors.orange.withOpacity(0.1),
+          cutOffY: 0,
+          applyCutOffY: true,
         ),
       ),
       LineChartBarData(
         spots: proteinSpots,
         isCurved: true,
+        preventCurveOverShooting: true,
         color: Colors.blue,
         barWidth: 3,
         isStrokeCapRound: true,
@@ -368,11 +372,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         belowBarData: BarAreaData(
           show: true,
           color: Colors.blue.withOpacity(0.1),
+          cutOffY: 0,
+          applyCutOffY: true,
         ),
       ),
       LineChartBarData(
         spots: fatSpots,
         isCurved: true,
+        preventCurveOverShooting: true,
         color: Colors.pink,
         barWidth: 3,
         isStrokeCapRound: true,
@@ -390,6 +397,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         belowBarData: BarAreaData(
           show: true,
           color: Colors.pink.withOpacity(0.1),
+          cutOffY: 0,
+          applyCutOffY: true,
         ),
       ),
     ];

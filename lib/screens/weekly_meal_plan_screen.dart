@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/meal_entry.dart';
 import '../models/user_goals.dart';
 import '../services/meal_tracking_service.dart';
+import 'add_meal_screen.dart';
 
 class WeeklyMealPlanScreen extends StatefulWidget {
   const WeeklyMealPlanScreen({super.key});
@@ -16,6 +17,7 @@ class _WeeklyMealPlanScreenState extends State<WeeklyMealPlanScreen> {
   Map<DateTime, List<MealEntry>> _weeklyMeals = {};
   UserGoals _userGoals = UserGoals();
   bool _isLoading = true;
+  bool _isTableView = true;
 
   @override
   void initState() {
@@ -99,6 +101,15 @@ class _WeeklyMealPlanScreenState extends State<WeeklyMealPlanScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(_isTableView ? Icons.view_list : Icons.grid_view),
+            onPressed: () {
+              setState(() => _isTableView = !_isTableView);
+            },
+            tooltip: _isTableView ? '리스트 보기' : '표 보기',
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -107,7 +118,9 @@ class _WeeklyMealPlanScreenState extends State<WeeklyMealPlanScreen> {
                 children: [
                   _buildWeekSelector(),
                   Expanded(
-                    child: _buildWeeklyMealPlan(),
+                    child: _isTableView 
+                        ? _buildWeeklyMealTable() 
+                        : _buildWeeklyMealList(),
                   ),
                 ],
               ),
@@ -160,7 +173,243 @@ class _WeeklyMealPlanScreenState extends State<WeeklyMealPlanScreen> {
     );
   }
 
-  Widget _buildWeeklyMealPlan() {
+  // Calendar-like table view showing days as columns and meal types as rows
+  Widget _buildWeeklyMealTable() {
+    final days = ['월', '화', '수', '목', '금', '토', '일'];
+    final mealTypes = MealType.values;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header row with days
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF4CAF50),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              child: Row(
+                children: [
+                  _buildHeaderCell('', isFirst: true),
+                  for (int i = 0; i < 7; i++)
+                    _buildDayHeader(i, days[i]),
+                ],
+              ),
+            ),
+            // Meal type rows
+            for (var mealType in mealTypes)
+              _buildMealTypeRow(mealType),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCell(String text, {bool isFirst = false}) {
+    return Container(
+      width: isFirst ? 60 : null,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDayHeader(int dayIndex, String dayName) {
+    final date = _selectedWeekStart.add(Duration(days: dayIndex));
+    final isToday = date.year == DateTime.now().year &&
+        date.month == DateTime.now().month &&
+        date.day == DateTime.now().day;
+
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isToday ? const Color(0xFF388E3C) : null,
+        ),
+        child: Column(
+          children: [
+            Text(
+              dayName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              DateFormat('d').format(date),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMealTypeRow(MealType mealType) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+        ),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Meal type label
+            Container(
+              width: 60,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+              decoration: BoxDecoration(
+                color: _getMealTypeColor(mealType).withOpacity(0.1),
+                border: Border(
+                  right: BorderSide(color: Colors.grey[200]!, width: 1),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  mealType.displayName,
+                  style: TextStyle(
+                    color: _getMealTypeColor(mealType),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+            // Day cells for this meal type
+            for (int i = 0; i < 7; i++)
+              Expanded(
+                child: _buildMealCell(i, mealType),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMealCell(int dayIndex, MealType mealType) {
+    final date = _selectedWeekStart.add(Duration(days: dayIndex));
+    final meals = _weeklyMeals[date] ?? [];
+    final mealsOfType = meals.where((m) => m.mealType == mealType).toList();
+    final isToday = date.year == DateTime.now().year &&
+        date.month == DateTime.now().month &&
+        date.day == DateTime.now().day;
+
+    return GestureDetector(
+      onTap: () => _onCellTap(date, mealType),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        constraints: const BoxConstraints(minHeight: 80),
+        decoration: BoxDecoration(
+          color: isToday ? Colors.green.withOpacity(0.05) : null,
+          border: Border(
+            right: BorderSide(color: Colors.grey[200]!, width: 1),
+          ),
+        ),
+        child: mealsOfType.isEmpty
+            ? Center(
+                child: Icon(
+                  Icons.add_circle_outline,
+                  color: Colors.grey[300],
+                  size: 20,
+                ),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var meal in mealsOfType)
+                    for (var foodEntry in meal.foodItems.take(2))
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Text(
+                          foodEntry.foodItem.name,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            height: 1.2,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  if (_getFoodCount(mealsOfType) > 2)
+                    Text(
+                      '+${_getFoodCount(mealsOfType) - 2}',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  int _getFoodCount(List<MealEntry> meals) {
+    int count = 0;
+    for (var meal in meals) {
+      count += meal.foodItems.length;
+    }
+    return count;
+  }
+
+  void _onCellTap(DateTime date, MealType mealType) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMealScreen(
+          initialDate: date,
+          onMealAdded: () {
+            _loadWeeklyData();
+          },
+        ),
+      ),
+    );
+  }
+
+  Color _getMealTypeColor(MealType mealType) {
+    switch (mealType) {
+      case MealType.breakfast:
+        return Colors.orange;
+      case MealType.lunch:
+        return Colors.blue;
+      case MealType.dinner:
+        return Colors.purple;
+      case MealType.snack:
+        return Colors.pink;
+    }
+  }
+
+  // Original list view
+  Widget _buildWeeklyMealList() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: 7,
@@ -289,13 +538,26 @@ class _WeeklyMealPlanScreenState extends State<WeeklyMealPlanScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            mealType.displayName,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2C3E50),
-            ),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: _getMealTypeColor(mealType),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                mealType.displayName,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: _getMealTypeColor(mealType),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           for (var meal in meals)

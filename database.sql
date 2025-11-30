@@ -38,6 +38,7 @@ CREATE TABLE meals (
   breakfast LONGTEXT COMMENT '아침 식단 (JSON)',
   lunch LONGTEXT COMMENT '점심 식단 (JSON)',
   dinner LONGTEXT COMMENT '저녁 식단 (JSON)',
+  snacks LONGTEXT COMMENT '간식 식단 (JSON)',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
   INDEX idx_date (date),
@@ -164,9 +165,29 @@ SET @dinner_2025_11_03 = '[
   }
 ]';
 
+-- 2025년 11월 3일 간식 데이터
+SET @snacks_2025_11_03 = '[
+  {
+    "name": "사과",
+    "calories": 95,
+    "protein": 0.5,
+    "carbs": 25,
+    "fat": 0.3,
+    "allergens": []
+  },
+  {
+    "name": "요거트",
+    "calories": 100,
+    "protein": 10,
+    "carbs": 12,
+    "fat": 2,
+    "allergens": ["우유"]
+  }
+]';
+
 -- 2025년 11월 3일 식단 삽입
-INSERT INTO meals (date, breakfast, lunch, dinner) 
-VALUES ('2025-11-03', @breakfast_2025_11_03, @lunch_2025_11_03, @dinner_2025_11_03);
+INSERT INTO meals (date, breakfast, lunch, dinner, snacks) 
+VALUES ('2025-11-03', @breakfast_2025_11_03, @lunch_2025_11_03, @dinner_2025_11_03, @snacks_2025_11_03);
 
 -- 2025년 11월 4일 식단 데이터
 SET @breakfast_2025_11_04 = '[
@@ -258,9 +279,29 @@ SET @dinner_2025_11_04 = '[
   }
 ]';
 
+-- 2025년 11월 4일 간식 데이터
+SET @snacks_2025_11_04 = '[
+  {
+    "name": "바나나",
+    "calories": 105,
+    "protein": 1.3,
+    "carbs": 27,
+    "fat": 0.4,
+    "allergens": []
+  },
+  {
+    "name": "아몬드",
+    "calories": 160,
+    "protein": 6,
+    "carbs": 6,
+    "fat": 14,
+    "allergens": ["견과류"]
+  }
+]';
+
 -- 2025년 11월 4일 식단 삽입
-INSERT INTO meals (date, breakfast, lunch, dinner) 
-VALUES ('2025-11-04', @breakfast_2025_11_04, @lunch_2025_11_04, @dinner_2025_11_04);
+INSERT INTO meals (date, breakfast, lunch, dinner, snacks) 
+VALUES ('2025-11-04', @breakfast_2025_11_04, @lunch_2025_11_04, @dinner_2025_11_04, @snacks_2025_11_04);
 
 -- ====================================
 -- 테스트 사용자 데이터 삽입

@@ -191,7 +191,8 @@ app.get('/api/meals', authenticateToken, async (req, res) => {
           date,
           breakfast: [],
           lunch: [],
-          dinner: []
+          dinner: [],
+          snacks: []
         });
       }
 
@@ -202,7 +203,8 @@ app.get('/api/meals', authenticateToken, async (req, res) => {
         date,
         breakfast: JSON.parse(meal.breakfast || '[]'),
         lunch: JSON.parse(meal.lunch || '[]'),
-        dinner: JSON.parse(meal.dinner || '[]')
+        dinner: JSON.parse(meal.dinner || '[]'),
+        snacks: JSON.parse(meal.snacks || '[]')
       });
     } catch (err) {
       await conn.release();
@@ -211,6 +213,179 @@ app.get('/api/meals', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('식단 조회 오류:', error);
     res.status(500).json({ message: '식단 조회 중 오류가 발생했습니다.' });
+  }
+});
+
+// 주간 식단 조회
+app.get('/api/meals/weekly', authenticateToken, async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: '시작 날짜(startDate)와 종료 날짜(endDate) 파라미터가 필요합니다.' });
+    }
+
+    const conn = await pool.getConnection();
+
+    try {
+      const [rows] = await conn.query(
+        'SELECT * FROM meals WHERE date >= ? AND date <= ? ORDER BY date ASC',
+        [startDate, endDate]
+      );
+
+      const weeklyMeals = rows.map(row => ({
+        date: row.date,
+        breakfast: JSON.parse(row.breakfast || '[]'),
+        lunch: JSON.parse(row.lunch || '[]'),
+        dinner: JSON.parse(row.dinner || '[]'),
+        snacks: JSON.parse(row.snacks || '[]')
+      }));
+
+      await conn.release();
+      res.json(weeklyMeals);
+    } catch (err) {
+      await conn.release();
+      throw err;
+    }
+  } catch (error) {
+    console.error('주간 식단 조회 오류:', error);
+    res.status(500).json({ message: '주간 식단 조회 중 오류가 발생했습니다.' });
+  }
+});
+
+// 식단 추가/업데이트
+app.post('/api/meals', authenticateToken, async (req, res) => {
+  try {
+    const { date, breakfast, lunch, dinner, snacks } = req.body;
+
+    if (!date) {
+      return res.status(400).json({ message: '날짜(date)는 필수입니다.' });
+    }
+
+    const conn = await pool.getConnection();
+
+    try {
+      // UPSERT: 해당 날짜가 이미 있으면 업데이트, 없으면 삽입
+      await conn.query(
+        `INSERT INTO meals (date, breakfast, lunch, dinner, snacks) 
+         VALUES (?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE 
+         breakfast = COALESCE(VALUES(breakfast), breakfast),
+         lunch = COALESCE(VALUES(lunch), lunch),
+         dinner = COALESCE(VALUES(dinner), dinner),
+         snacks = COALESCE(VALUES(snacks), snacks)`,
+        [
+          date,
+          breakfast ? JSON.stringify(breakfast) : null,
+          lunch ? JSON.stringify(lunch) : null,
+          dinner ? JSON.stringify(dinner) : null,
+          snacks ? JSON.stringify(snacks) : null
+        ]
+      );
+
+      await conn.release();
+      res.status(201).json({ message: '식단이 저장되었습니다.' });
+    } catch (err) {
+      await conn.release();
+      throw err;
+    }
+  } catch (error) {
+    console.error('식단 저장 오류:', error);
+    res.status(500).json({ message: '식단 저장 중 오류가 발생했습니다.' });
+  }
+});
+
+// 식단 업데이트
+app.put('/api/meals', authenticateToken, async (req, res) => {
+  try {
+    const { date, mealType, items } = req.body;
+
+    if (!date || !mealType) {
+      return res.status(400).json({ message: '날짜(date)와 식사 유형(mealType)은 필수입니다.' });
+    }
+
+    const validMealTypes = ['breakfast', 'lunch', 'dinner', 'snacks'];
+    if (!validMealTypes.includes(mealType)) {
+      return res.status(400).json({ message: '유효하지 않은 식사 유형입니다. (breakfast, lunch, dinner, snacks)' });
+    }
+
+    const conn = await pool.getConnection();
+
+    try {
+      // 해당 날짜의 식단이 있는지 확인
+      const [existing] = await conn.query('SELECT id FROM meals WHERE date = ?', [date]);
+
+      if (existing.length === 0) {
+        // 새 레코드 생성
+        const insertData = {
+          breakfast: mealType === 'breakfast' ? JSON.stringify(items || []) : null,
+          lunch: mealType === 'lunch' ? JSON.stringify(items || []) : null,
+          dinner: mealType === 'dinner' ? JSON.stringify(items || []) : null,
+          snacks: mealType === 'snacks' ? JSON.stringify(items || []) : null
+        };
+
+        await conn.query(
+          'INSERT INTO meals (date, breakfast, lunch, dinner, snacks) VALUES (?, ?, ?, ?, ?)',
+          [date, insertData.breakfast, insertData.lunch, insertData.dinner, insertData.snacks]
+        );
+      } else {
+        // 기존 레코드 업데이트
+        await conn.query(
+          `UPDATE meals SET ${mealType} = ? WHERE date = ?`,
+          [JSON.stringify(items || []), date]
+        );
+      }
+
+      await conn.release();
+      res.json({ message: '식단이 업데이트되었습니다.' });
+    } catch (err) {
+      await conn.release();
+      throw err;
+    }
+  } catch (error) {
+    console.error('식단 업데이트 오류:', error);
+    res.status(500).json({ message: '식단 업데이트 중 오류가 발생했습니다.' });
+  }
+});
+
+// 식단 삭제
+app.delete('/api/meals', authenticateToken, async (req, res) => {
+  try {
+    const { date, mealType } = req.body;
+
+    if (!date) {
+      return res.status(400).json({ message: '날짜(date)는 필수입니다.' });
+    }
+
+    const conn = await pool.getConnection();
+
+    try {
+      if (mealType) {
+        // 특정 식사 유형만 삭제 (null로 설정)
+        const validMealTypes = ['breakfast', 'lunch', 'dinner', 'snacks'];
+        if (!validMealTypes.includes(mealType)) {
+          await conn.release();
+          return res.status(400).json({ message: '유효하지 않은 식사 유형입니다.' });
+        }
+
+        await conn.query(
+          `UPDATE meals SET ${mealType} = NULL WHERE date = ?`,
+          [date]
+        );
+      } else {
+        // 해당 날짜 전체 식단 삭제
+        await conn.query('DELETE FROM meals WHERE date = ?', [date]);
+      }
+
+      await conn.release();
+      res.json({ message: '식단이 삭제되었습니다.' });
+    } catch (err) {
+      await conn.release();
+      throw err;
+    }
+  } catch (error) {
+    console.error('식단 삭제 오류:', error);
+    res.status(500).json({ message: '식단 삭제 중 오류가 발생했습니다.' });
   }
 });
 
@@ -234,8 +409,9 @@ app.get('/api/meals/search', authenticateToken, async (req, res) => {
         const breakfast = JSON.parse(row.breakfast || '[]');
         const lunch = JSON.parse(row.lunch || '[]');
         const dinner = JSON.parse(row.dinner || '[]');
+        const snacks = JSON.parse(row.snacks || '[]');
 
-        const allMeals = [...breakfast, ...lunch, ...dinner];
+        const allMeals = [...breakfast, ...lunch, ...dinner, ...snacks];
         allMeals.forEach(meal => {
           if (meal.name.includes(q)) {
             results.push(meal);
