@@ -49,3 +49,23 @@ coverage/
 .pub-cache/
 .pub/
 pubspec.lock
+
+### Node.js ###
+node_modules/
+npm-debug.log
+yarn-error.log
+
+### Environment ###
+.env
+.env.local
+.env.*.local
+
+### Uploads ###
+uploads/
+
+### IDE ###
+.idea/
+
+### Logs ###
+*.log
+logs/
