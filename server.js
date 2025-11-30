@@ -15,6 +15,53 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// ==================== 간단한 Rate Limiter ====================
+const rateLimit = {
+  windowMs: 60 * 1000, // 1분
+  max: 100, // 분당 최대 요청 수
+  requests: new Map()
+};
+
+const rateLimiter = (req, res, next) => {
+  const ip = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  
+  if (!rateLimit.requests.has(ip)) {
+    rateLimit.requests.set(ip, { count: 1, startTime: now });
+    return next();
+  }
+  
+  const record = rateLimit.requests.get(ip);
+  
+  if (now - record.startTime > rateLimit.windowMs) {
+    // 윈도우 초과, 리셋
+    rateLimit.requests.set(ip, { count: 1, startTime: now });
+    return next();
+  }
+  
+  if (record.count >= rateLimit.max) {
+    return res.status(429).json({ 
+      message: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' 
+    });
+  }
+  
+  record.count++;
+  next();
+};
+
+// Rate limiter 적용
+app.use(rateLimiter);
+
+// 오래된 요청 기록 정리 (메모리 관리)
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of rateLimit.requests) {
+    if (now - record.startTime > rateLimit.windowMs * 2) {
+      rateLimit.requests.delete(ip);
+    }
+  }
+}, 60000); // 1분마다 정리
+
 // 업로드 디렉토리 설정
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -97,7 +144,6 @@ app.post('/api/auth/register', async (req, res) => {
       );
 
       if (rows.length > 0) {
-        await conn.release();
         return res.status(409).json({ message: '이미 등록된 이메일입니다.' });
       }
 
@@ -116,11 +162,9 @@ app.post('/api/auth/register', async (req, res) => {
         ]
       );
 
-      await conn.release();
       res.status(201).json({ message: '회원가입이 완료되었습니다.' });
-    } catch (err) {
-      await conn.release();
-      throw err;
+    } finally {
+      conn.release();
     }
   } catch (error) {
     console.error('회원가입 오류:', error);
@@ -148,7 +192,6 @@ app.post('/api/auth/login', async (req, res) => {
       );
 
       if (rows.length === 0) {
-        await conn.release();
         return res.status(401).json({ message: '이메일 또는 비밀번호가 일치하지 않습니다.' });
       }
 
@@ -157,7 +200,6 @@ app.post('/api/auth/login', async (req, res) => {
       // 비밀번호 확인
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
-        await conn.release();
         return res.status(401).json({ message: '이메일 또는 비밀번호가 일치하지 않습니다.' });
       }
 
@@ -167,8 +209,6 @@ app.post('/api/auth/login', async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: '7d' }
       );
-
-      await conn.release();
 
       res.json({
         message: '로그인 성공',
@@ -181,9 +221,8 @@ app.post('/api/auth/login', async (req, res) => {
           preferences: JSON.parse(user.preferences || '[]')
         }
       });
-    } catch (err) {
-      await conn.release();
-      throw err;
+    } finally {
+      conn.release();
     }
   } catch (error) {
     console.error('로그인 오류:', error);
@@ -211,7 +250,6 @@ app.get('/api/meals', authenticateToken, async (req, res) => {
       );
 
       if (rows.length === 0) {
-        await conn.release();
         return res.status(404).json({
           date,
           breakfast: [],
@@ -221,7 +259,6 @@ app.get('/api/meals', authenticateToken, async (req, res) => {
       }
 
       const meal = rows[0];
-      await conn.release();
 
       res.json({
         date,
@@ -229,9 +266,8 @@ app.get('/api/meals', authenticateToken, async (req, res) => {
         lunch: JSON.parse(meal.lunch || '[]'),
         dinner: JSON.parse(meal.dinner || '[]')
       });
-    } catch (err) {
-      await conn.release();
-      throw err;
+    } finally {
+      conn.release();
     }
   } catch (error) {
     console.error('식단 조회 오류:', error);
@@ -268,11 +304,9 @@ app.get('/api/meals/search', authenticateToken, async (req, res) => {
         });
       });
 
-      await conn.release();
       res.json(results);
-    } catch (err) {
-      await conn.release();
-      throw err;
+    } finally {
+      conn.release();
     }
   } catch (error) {
     console.error('식단 검색 오류:', error);
@@ -294,12 +328,10 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
       );
 
       if (rows.length === 0) {
-        await conn.release();
         return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
       }
 
       const user = rows[0];
-      await conn.release();
 
       res.json({
         id: user.id,
@@ -308,9 +340,8 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
         allergies: JSON.parse(user.allergies || '[]'),
         preferences: JSON.parse(user.preferences || '[]')
       });
-    } catch (err) {
-      await conn.release();
-      throw err;
+    } finally {
+      conn.release();
     }
   } catch (error) {
     console.error('프로필 조회 오류:', error);
@@ -340,12 +371,9 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
         ]
       );
 
-      await conn.release();
-
       res.json({ message: '프로필이 업데이트되었습니다.' });
-    } catch (err) {
-      await conn.release();
-      throw err;
+    } finally {
+      conn.release();
     }
   } catch (error) {
     console.error('프로필 업데이트 오류:', error);

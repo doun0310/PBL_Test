@@ -2,12 +2,21 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/meal_entry.dart';
 import '../models/user_goals.dart';
+import 'backend_api_service.dart';
 
 class MealTrackingService {
   static const String _mealsKey = 'meals_data';
   static const String _goalsKey = 'user_goals';
+  
+  // 백엔드 사용 여부
+  static bool _useBackend = true;
 
-  // 모든 식사 기록 가져오기
+  /// 초기화 - 백엔드 연결 확인
+  static Future<void> initialize() async {
+    _useBackend = await BackendApiService.healthCheck();
+  }
+
+  // 모든 식사 기록 가져오기 (로컬)
   static Future<List<MealEntry>> getAllMeals() async {
     final prefs = await SharedPreferences.getInstance();
     final mealsJson = prefs.getString(_mealsKey);
@@ -22,6 +31,19 @@ class MealTrackingService {
 
   // 특정 날짜의 식사 기록 가져오기
   static Future<List<MealEntry>> getMealsByDate(DateTime date) async {
+    // 백엔드 사용 시도
+    if (_useBackend) {
+      try {
+        final meals = await BackendApiService.getDietByDate(date);
+        if (meals.isNotEmpty) {
+          return meals;
+        }
+      } catch (e) {
+        // 백엔드 실패 시 로컬 폴백
+      }
+    }
+
+    // 로컬 폴백
     final allMeals = await getAllMeals();
     return allMeals.where((meal) {
       return meal.timestamp.year == date.year &&
@@ -32,6 +54,23 @@ class MealTrackingService {
 
   // 식사 기록 추가
   static Future<void> addMeal(MealEntry meal) async {
+    // 백엔드 저장 시도
+    if (_useBackend) {
+      try {
+        final success = await BackendApiService.addDiet(meal);
+        if (success) {
+          // 로컬에도 저장 (캐시)
+          final meals = await getAllMeals();
+          meals.add(meal);
+          await _saveMeals(meals);
+          return;
+        }
+      } catch (e) {
+        // 백엔드 실패 시 로컬에만 저장
+      }
+    }
+
+    // 로컬 저장
     final meals = await getAllMeals();
     meals.add(meal);
     await _saveMeals(meals);
@@ -49,6 +88,16 @@ class MealTrackingService {
 
   // 식사 기록 삭제
   static Future<void> deleteMeal(String mealId) async {
+    // 백엔드 삭제 시도
+    if (_useBackend) {
+      try {
+        await BackendApiService.deleteDiet(mealId);
+      } catch (e) {
+        // 백엔드 실패해도 로컬에서 삭제
+      }
+    }
+
+    // 로컬 삭제
     final meals = await getAllMeals();
     meals.removeWhere((m) => m.id == mealId);
     await _saveMeals(meals);
@@ -63,6 +112,20 @@ class MealTrackingService {
 
   // 특정 날짜의 총 영양 정보 계산
   static Future<DailyNutrition> getDailyNutrition(DateTime date) async {
+    // 백엔드 사용 시도
+    if (_useBackend) {
+      try {
+        final nutrition = await BackendApiService.getDailyNutrition(date);
+        if (nutrition.calories > 0 || nutrition.protein > 0 || 
+            nutrition.carbs > 0 || nutrition.fat > 0) {
+          return nutrition;
+        }
+      } catch (e) {
+        // 백엔드 실패 시 로컬 계산
+      }
+    }
+
+    // 로컬 계산
     final meals = await getMealsByDate(date);
     
     double totalCalories = 0;
@@ -87,6 +150,16 @@ class MealTrackingService {
 
   // 사용자 목표 가져오기
   static Future<UserGoals> getUserGoals() async {
+    // 백엔드 사용 시도
+    if (_useBackend) {
+      try {
+        return await BackendApiService.getGoals();
+      } catch (e) {
+        // 백엔드 실패 시 로컬 폴백
+      }
+    }
+
+    // 로컬 폴백
     final prefs = await SharedPreferences.getInstance();
     final goalsJson = prefs.getString(_goalsKey);
     
@@ -99,12 +172,40 @@ class MealTrackingService {
 
   // 사용자 목표 저장
   static Future<void> saveUserGoals(UserGoals goals) async {
+    // 백엔드 저장 시도
+    if (_useBackend) {
+      try {
+        await BackendApiService.updateGoals(goals);
+      } catch (e) {
+        // 백엔드 실패해도 로컬에 저장
+      }
+    }
+
+    // 로컬 저장
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_goalsKey, json.encode(goals.toJson()));
   }
 
   // 주간 영양 데이터 가져오기 (7일)
   static Future<List<DailyNutrition>> getWeeklyNutrition(DateTime endDate) async {
+    // 백엔드 사용 시도
+    if (_useBackend) {
+      try {
+        final weeklyData = await BackendApiService.getWeeklyNutrition();
+        if (weeklyData.isNotEmpty) {
+          return weeklyData.map((data) => DailyNutrition(
+            calories: (data['calories'] as num?)?.toDouble() ?? 0,
+            protein: (data['protein'] as num?)?.toDouble() ?? 0,
+            carbs: (data['carbs'] as num?)?.toDouble() ?? 0,
+            fat: (data['fat'] as num?)?.toDouble() ?? 0,
+          )).toList();
+        }
+      } catch (e) {
+        // 백엔드 실패 시 로컬 계산
+      }
+    }
+
+    // 로컬 계산
     List<DailyNutrition> weeklyData = [];
     
     for (int i = 6; i >= 0; i--) {
@@ -118,6 +219,24 @@ class MealTrackingService {
 
   // 월간 영양 데이터 가져오기 (30일)
   static Future<List<DailyNutrition>> getMonthlyNutrition(DateTime endDate) async {
+    // 백엔드 사용 시도
+    if (_useBackend) {
+      try {
+        final monthlyData = await BackendApiService.getMonthlyNutrition();
+        if (monthlyData.isNotEmpty) {
+          return monthlyData.map((data) => DailyNutrition(
+            calories: (data['calories'] as num?)?.toDouble() ?? 0,
+            protein: (data['protein'] as num?)?.toDouble() ?? 0,
+            carbs: (data['carbs'] as num?)?.toDouble() ?? 0,
+            fat: (data['fat'] as num?)?.toDouble() ?? 0,
+          )).toList();
+        }
+      } catch (e) {
+        // 백엔드 실패 시 로컬 계산
+      }
+    }
+
+    // 로컬 계산
     List<DailyNutrition> monthlyData = [];
     
     for (int i = 29; i >= 0; i--) {
@@ -134,6 +253,19 @@ class MealTrackingService {
     DateTime startDate, 
     DateTime endDate,
   ) async {
+    // 백엔드 사용 시도
+    final days = endDate.difference(startDate).inDays;
+    final period = days > 14 ? 'month' : 'week';
+    
+    if (_useBackend) {
+      try {
+        return await BackendApiService.getFoodRanking(period: period);
+      } catch (e) {
+        // 백엔드 실패 시 로컬 계산
+      }
+    }
+
+    // 로컬 계산
     final allMeals = await getAllMeals();
     final filteredMeals = allMeals.where((meal) {
       return meal.timestamp.isAfter(startDate.subtract(const Duration(days: 1))) &&
@@ -162,5 +294,23 @@ class MealTrackingService {
     ranking.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
 
     return ranking.take(10).toList();
+  }
+
+  // 음식 추천 가져오기
+  static Future<Map<String, dynamic>> getRecommendations({
+    required double remainingCalories,
+    int remainingMeals = 1,
+  }) async {
+    if (_useBackend) {
+      try {
+        return await BackendApiService.getRecommendations(
+          remainingCalories: remainingCalories,
+          remainingMeals: remainingMeals,
+        );
+      } catch (e) {
+        // 백엔드 실패 시 빈 결과
+      }
+    }
+    return {'singleFoods': [], 'combinations': []};
   }
 }

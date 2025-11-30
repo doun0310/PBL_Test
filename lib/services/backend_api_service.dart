@@ -8,11 +8,38 @@ import '../models/user_goals.dart';
 /// Diet101 Backend API Service
 /// Node.js 백엔드 서버와 통신하는 서비스
 class BackendApiService {
-  // 서버 기본 URL (실제 배포 시 변경 필요)
-  static const String _baseUrl = 'http://localhost:3000/api';
+  // 서버 기본 URL (환경에 따라 변경)
+  // 개발: 'http://localhost:3000/api' 또는 'http://10.0.2.2:3000/api' (Android 에뮬레이터)
+  // 프로덕션: 실제 서버 URL
+  static String _baseUrl = 'http://localhost:3000/api';
   
   // 토큰 저장 키
   static const String _tokenKey = 'auth_token';
+  static const String _baseUrlKey = 'api_base_url';
+  
+  /// API 기본 URL 설정
+  static void setBaseUrl(String url) {
+    _baseUrl = url;
+  }
+  
+  /// API 기본 URL 가져오기
+  static String getBaseUrl() => _baseUrl;
+  
+  /// 저장된 URL 로드
+  static Future<void> loadBaseUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUrl = prefs.getString(_baseUrlKey);
+    if (savedUrl != null && savedUrl.isNotEmpty) {
+      _baseUrl = savedUrl;
+    }
+  }
+  
+  /// URL 저장
+  static Future<void> saveBaseUrl(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_baseUrlKey, url);
+    _baseUrl = url;
+  }
   
   /// HTTP 헤더 생성 (인증 토큰 포함)
   static Future<Map<String, String>> _getHeaders() async {

@@ -10,6 +10,8 @@ import 'services/auth_service.dart';
 import 'services/theme_service.dart';
 import 'services/localization_service.dart';
 import 'services/notification_service.dart';
+import 'services/food_database_service.dart';
+import 'services/meal_tracking_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +28,18 @@ void main() async {
     debugPrint('App will continue without Firebase features');
   }
   
-  // 서비스 초기화
+  // 백엔드 서비스 초기화
+  try {
+    await AuthService.initialize();
+    await FoodDatabaseService.initialize();
+    await MealTrackingService.initialize();
+    debugPrint('Backend services initialized');
+  } catch (e) {
+    debugPrint('Backend initialization failed: $e');
+    debugPrint('App will use local storage');
+  }
+  
+  // 알림 서비스 초기화
   await NotificationService.initialize();
   
   final themeService = ThemeService();
@@ -48,7 +61,7 @@ class DietTrackingApp extends StatelessWidget {
     return Consumer<ThemeService>(
       builder: (context, themeService, child) {
         return MaterialApp(
-          title: '영양소 추적기',
+          title: 'Diet101',
           debugShowCheckedModeBanner: false,
           theme: ThemeService.lightTheme,
           darkTheme: ThemeService.darkTheme,
@@ -79,8 +92,22 @@ class AuthWrapper extends StatelessWidget {
           return const Scaffold(
             backgroundColor: Color(0xFFF5F5F5),
             body: Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Diet101',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF4CAF50),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
