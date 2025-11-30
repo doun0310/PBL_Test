@@ -7,10 +7,15 @@ import '../models/user_goals.dart';
 
 /// Diet101 Backend API Service
 /// Node.js 백엔드 서버와 통신하는 서비스
+/// 
+/// 사용법:
+/// 1. 앱 시작 시 BackendApiService.loadBaseUrl()을 호출하여 저장된 URL 로드
+/// 2. 필요시 BackendApiService.setBaseUrl()로 서버 URL 변경
+/// 3. 개발 환경: 'http://localhost:3000/api' 또는 'http://10.0.2.2:3000/api' (Android 에뮬레이터)
+/// 4. 프로덕션 환경: 실제 서버 URL 사용
 class BackendApiService {
-  // 서버 기본 URL (환경에 따라 변경)
-  // 개발: 'http://localhost:3000/api' 또는 'http://10.0.2.2:3000/api' (Android 에뮬레이터)
-  // 프로덕션: 실제 서버 URL
+  // 서버 기본 URL
+  // 기본값은 localhost, 실제 배포 시 setBaseUrl()로 변경
   static String _baseUrl = 'http://localhost:3000/api';
   
   // 토큰 저장 키
@@ -18,6 +23,7 @@ class BackendApiService {
   static const String _baseUrlKey = 'api_base_url';
   
   /// API 기본 URL 설정
+  /// 앱 설정에서 서버 URL을 변경할 때 사용
   static void setBaseUrl(String url) {
     _baseUrl = url;
   }
@@ -25,7 +31,7 @@ class BackendApiService {
   /// API 기본 URL 가져오기
   static String getBaseUrl() => _baseUrl;
   
-  /// 저장된 URL 로드
+  /// 저장된 URL 로드 (앱 시작 시 호출)
   static Future<void> loadBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
     final savedUrl = prefs.getString(_baseUrlKey);
@@ -34,7 +40,7 @@ class BackendApiService {
     }
   }
   
-  /// URL 저장
+  /// URL 저장 (서버 URL 변경 시 영구 저장)
   static Future<void> saveBaseUrl(String url) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_baseUrlKey, url);

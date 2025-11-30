@@ -16,6 +16,8 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ==================== 간단한 Rate Limiter ====================
+// NOTE: 이 in-memory 구현은 단일 서버 배포용입니다.
+// 프로덕션 클러스터 환경에서는 Redis 기반 rate limiter로 교체하세요.
 const rateLimit = {
   windowMs: 60 * 1000, // 1분
   max: 100, // 분당 최대 요청 수
@@ -841,12 +843,14 @@ app.get('/api/recommend', authenticateToken, async (req, res) => {
 });
 
 // ==================== OCR 영양성분표 인식 API ====================
+// NOTE: 아래 OCR 엔드포인트는 시뮬레이션 모드입니다.
+// 프로덕션에서는 실제 EasyOCR 서비스와 통합하세요.
 
 // 영양성분표 이미지 업로드 및 분석 (시뮬레이션)
 app.post('/api/ocr/nutrition', upload.single('image'), async (req, res) => {
   try {
-    // 실제 구현에서는 EasyOCR API 호출
-    // 여기서는 시뮬레이션 결과 반환
+    // TODO: 프로덕션에서는 EasyOCR API와 통합
+    // 현재는 시뮬레이션용 결과 반환
     const simulatedResult = {
       success: true,
       data: {
@@ -869,14 +873,16 @@ app.post('/api/ocr/nutrition', upload.single('image'), async (req, res) => {
 });
 
 // ==================== AI 음식 인식 API ====================
+// NOTE: 아래 엔드포인트들은 시뮬레이션 모드입니다.
+// 프로덕션에서는 실제 YOLO/EasyOCR 서비스와 통합하세요.
 
 // 음식 이미지 분석 (시뮬레이션)
 app.post('/api/ai/recognize', upload.single('image'), async (req, res) => {
   try {
     const conn = await pool.getConnection();
     try {
-      // 실제 구현에서는 YOLO 모델 API 호출
-      // 여기서는 랜덤 음식 반환 (시뮬레이션)
+      // TODO: 프로덕션에서는 YOLO 모델 API와 통합
+      // 현재는 시뮬레이션용 랜덤 음식 반환
       const [foods] = await conn.query('SELECT * FROM foods ORDER BY RAND() LIMIT 3');
       
       const detections = foods.map(food => ({
