@@ -304,8 +304,16 @@ app.put('/api/meals', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: '날짜(date)와 식사 유형(mealType)은 필수입니다.' });
     }
 
-    const validMealTypes = ['breakfast', 'lunch', 'dinner', 'snacks'];
-    if (!validMealTypes.includes(mealType)) {
+    // Map for safe column names - prevents SQL injection
+    const mealTypeColumnMap = {
+      'breakfast': 'breakfast',
+      'lunch': 'lunch',
+      'dinner': 'dinner',
+      'snacks': 'snacks'
+    };
+
+    const columnName = mealTypeColumnMap[mealType];
+    if (!columnName) {
       return res.status(400).json({ message: '유효하지 않은 식사 유형입니다. (breakfast, lunch, dinner, snacks)' });
     }
 
@@ -329,11 +337,16 @@ app.put('/api/meals', authenticateToken, async (req, res) => {
           [date, insertData.breakfast, insertData.lunch, insertData.dinner, insertData.snacks]
         );
       } else {
-        // 기존 레코드 업데이트
-        await conn.query(
-          `UPDATE meals SET ${mealType} = ? WHERE date = ?`,
-          [JSON.stringify(items || []), date]
-        );
+        // 기존 레코드 업데이트 - use explicit column mapping for safety
+        const updateQuery = columnName === 'breakfast' 
+          ? 'UPDATE meals SET breakfast = ? WHERE date = ?'
+          : columnName === 'lunch'
+          ? 'UPDATE meals SET lunch = ? WHERE date = ?'
+          : columnName === 'dinner'
+          ? 'UPDATE meals SET dinner = ? WHERE date = ?'
+          : 'UPDATE meals SET snacks = ? WHERE date = ?';
+        
+        await conn.query(updateQuery, [JSON.stringify(items || []), date]);
       }
 
       await conn.release();
@@ -362,16 +375,30 @@ app.delete('/api/meals', authenticateToken, async (req, res) => {
     try {
       if (mealType) {
         // 특정 식사 유형만 삭제 (null로 설정)
-        const validMealTypes = ['breakfast', 'lunch', 'dinner', 'snacks'];
-        if (!validMealTypes.includes(mealType)) {
+        // Map for safe column names - prevents SQL injection
+        const mealTypeColumnMap = {
+          'breakfast': 'breakfast',
+          'lunch': 'lunch',
+          'dinner': 'dinner',
+          'snacks': 'snacks'
+        };
+
+        const columnName = mealTypeColumnMap[mealType];
+        if (!columnName) {
           await conn.release();
           return res.status(400).json({ message: '유효하지 않은 식사 유형입니다.' });
         }
 
-        await conn.query(
-          `UPDATE meals SET ${mealType} = NULL WHERE date = ?`,
-          [date]
-        );
+        // Use explicit column mapping for safety
+        const updateQuery = columnName === 'breakfast' 
+          ? 'UPDATE meals SET breakfast = NULL WHERE date = ?'
+          : columnName === 'lunch'
+          ? 'UPDATE meals SET lunch = NULL WHERE date = ?'
+          : columnName === 'dinner'
+          ? 'UPDATE meals SET dinner = NULL WHERE date = ?'
+          : 'UPDATE meals SET snacks = NULL WHERE date = ?';
+        
+        await conn.query(updateQuery, [date]);
       } else {
         // 해당 날짜 전체 식단 삭제
         await conn.query('DELETE FROM meals WHERE date = ?', [date]);
