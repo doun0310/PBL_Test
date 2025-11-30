@@ -193,6 +193,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       LineChartData(
         minY: 0,
         maxY: _getMaxY(),
+        clipData: const FlClipData.all(),
         lineTouchData: LineTouchData(
           enabled: true,
           touchTooltipData: LineTouchTooltipData(
