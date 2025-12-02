@@ -1,15 +1,28 @@
 """
-YOLO v11 Training Script for Food Detection
+YOLO v8 Training Script for Food Detection (Fine-tuned for Korean Food)
 
-This script provides a template for training YOLO models using the Ultralytics package.
-It is designed for the diet tracking application to detect Korean food items.
+This script provides a training pipeline for fine-tuning YOLO v8 models to detect
+and classify Korean food items from photos. The model is used in the diet tracking
+application to identify individual food items in user-captured meal photos.
 
-Note: As of 2024, Ultralytics supports YOLO v8, v9, v10, and v11.
-This script uses the latest YOLO conventions and should work with YOLOv11
-when using 'yolo11n.pt', 'yolo11s.pt', etc. as the base model.
+Training Strategy:
+==================
+The fine-tuning process uses two datasets:
+1. Kaggle 'Food-11 image dataset' (16,643 images)
+   - Used to train YOLO to recognize food vs non-food objects
+   - Helps the model focus only on food items
+
+2. AI Hub '건강관리를 위한 음식 이미지' (Health Management Food Images)
+   - Original: 3,000,000 images with 3,500 classes
+   - Reduced to: 272,783 images with 154 classes (for hardware constraints)
+   - Provides specific Korean food classification (삼겹살, 된장찌개, etc.)
 
 Usage:
+    # Train with default settings
     python yolo_training.py --data data.yaml --epochs 100 --batch 16
+    
+    # Train with custom model
+    python yolo_training.py --model yolov8m.pt --data data.yaml --epochs 150
 
 Requirements:
     - ultralytics >= 8.0.0
@@ -32,7 +45,11 @@ except ImportError:
 
 class YOLOTrainer:
     """
-    A wrapper class for training YOLO models on custom food detection datasets.
+    A wrapper class for training YOLO v8 models on custom food detection datasets.
+    
+    This trainer is designed for fine-tuning on Korean food datasets:
+    - Stage 1: Food-11 dataset for food vs non-food classification
+    - Stage 2: AI Hub Korean food dataset for specific food classification
     
     Attributes:
         model: The YOLO model instance
@@ -42,7 +59,7 @@ class YOLOTrainer:
     
     def __init__(
         self,
-        model_name: str = "yolo11n.pt",
+        model_name: str = "yolov8n.pt",
         data_yaml: str = "data.yaml",
         project_dir: str = "./runs/train"
     ):
@@ -51,13 +68,11 @@ class YOLOTrainer:
         
         Args:
             model_name: Pre-trained model to use as base. Options:
-                       - 'yolo11n.pt' (nano - fastest, smallest)
-                       - 'yolo11s.pt' (small)
-                       - 'yolo11m.pt' (medium)
-                       - 'yolo11l.pt' (large)
-                       - 'yolo11x.pt' (extra large - most accurate)
-                       Note: If YOLOv11 is not available, fallback to v8:
-                       - 'yolov8n.pt', 'yolov8s.pt', etc.
+                       - 'yolov8n.pt' (nano - fastest, smallest)
+                       - 'yolov8s.pt' (small)
+                       - 'yolov8m.pt' (medium) - recommended for food detection
+                       - 'yolov8l.pt' (large)
+                       - 'yolov8x.pt' (extra large - most accurate)
             data_yaml: Path to the data.yaml configuration file
             project_dir: Directory to save training artifacts
         """
@@ -68,20 +83,13 @@ class YOLOTrainer:
         
     def load_model(self) -> YOLO:
         """
-        Load the YOLO model.
+        Load the YOLO v8 model.
         
         Returns:
             YOLO model instance
         """
         print(f"Loading model: {self.model_name}")
-        try:
-            self.model = YOLO(self.model_name)
-        except Exception as e:
-            # Fallback to YOLOv8 if YOLOv11 is not available
-            print(f"Warning: Could not load {self.model_name}: {e}")
-            fallback_model = "yolov8n.pt"
-            print(f"Falling back to: {fallback_model}")
-            self.model = YOLO(fallback_model)
+        self.model = YOLO(self.model_name)
         return self.model
     
     def train(
@@ -279,15 +287,15 @@ def create_sample_dataset_structure(base_path: str = "./datasets/food_dataset"):
 def main():
     """Main entry point for the training script."""
     parser = argparse.ArgumentParser(
-        description="Train YOLO v11 model for food detection"
+        description="Train YOLO v8 model for Korean food detection"
     )
     
     # Model arguments
     parser.add_argument(
         "--model",
         type=str,
-        default="yolo11n.pt",
-        help="Base model to use (default: yolo11n.pt)"
+        default="yolov8n.pt",
+        help="Base model to use (default: yolov8n.pt)"
     )
     parser.add_argument(
         "--data",

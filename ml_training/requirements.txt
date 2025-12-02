@@ -1,21 +1,24 @@
-# ML Training Dependencies for YOLO v11, EasyOCR, and Collaborative Filtering
+# ML Training Dependencies for YOLO v8, EasyOCR, and Collaborative Filtering
 # Install with: pip install -r requirements.txt
 
 # ====================
-# YOLO v11 Dependencies
+# YOLO v8 Dependencies
 # ====================
-ultralytics>=8.0.0  # YOLO framework (supports YOLOv8, v9, v10, v11)
+ultralytics>=8.0.0  # YOLO v8 framework
 
 # ====================
 # EasyOCR Dependencies
 # ====================
 easyocr>=1.7.0
+trdg>=1.8.0  # TextRecognitionDataGenerator for Korean text generation
 
 # ====================
-# Collaborative Filtering Dependencies
+# Collaborative Filtering Dependencies (Primary: cosine similarity)
 # ====================
-scikit-surprise>=1.1.3  # Surprise library for recommender systems
-scikit-learn>=1.3.0
+scikit-learn>=1.3.0  # sklearn.metrics.pairwise.cosine_similarity for food similarity
+
+# Optional: For advanced recommendation methods
+scikit-surprise>=1.1.3  # Surprise library for SVD/KNN algorithms
 
 # ====================
 # Core ML/Data Dependencies

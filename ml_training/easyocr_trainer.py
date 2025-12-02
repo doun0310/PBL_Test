@@ -1,27 +1,46 @@
 """
 EasyOCR Training/Fine-tuning Script for Nutrition Label Recognition
 
-This script provides utilities for preparing data and fine-tuning EasyOCR
-for recognizing nutrition labels in Korean and English.
+This script provides utilities for training EasyOCR to recognize Korean nutrition
+labels (성분표) from food product packaging.
 
-EasyOCR fine-tuning involves training a custom recognition model on your
-specific dataset. This is useful for improving accuracy on nutrition labels.
+Training Strategy:
+==================
+The fine-tuning process uses a multi-stage approach:
 
-Note: EasyOCR fine-tuning requires the separate easyocr-trainer package
-and follows a specific data format. This script provides:
-1. Data preparation utilities
-2. Basic inference wrapper
-3. Guidelines for fine-tuning setup
+1. Stage 1: Korean Character Recognition (1,000 samples)
+   - Generated using TextRecognitionDataGenerator
+   - Teaches the model to recognize Korean characters (Hangul)
+
+2. Stage 2: Product Label OCR (50,000 samples)
+   - AI Hub '의약품, 화장품 패키징 OCR 데이터'
+   - Similar text patterns to nutrition labels
+
+3. Stage 3: Nutrition Label Fine-tuning (800 samples)
+   - Custom captured and labeled nutrition label data
+   - Specific terms: '탄수화물', '포화지방', '단백질', etc.
+
+Training Configuration:
+- Train/Validation split: 80:20
+- Epochs: 3155
+
+Post-processing:
+Due to OCR errors (e.g., '트랜스 지방' → '브랜스 지방', '단백질' → '탄백질'),
+regex patterns are used to correct common misrecognitions.
 
 Usage:
-    # For data preparation:
+    # Generate Korean training data
+    python easyocr_trainer.py --generate-korean-data 1000
+    
+    # Prepare training data from annotations
     python easyocr_trainer.py --prepare-data path/to/images path/to/labels
     
-    # For inference (using pretrained model):
-    python easyocr_trainer.py --infer path/to/image.jpg
+    # Run inference with post-processing
+    python easyocr_trainer.py --infer path/to/nutrition_label.jpg
 
 Requirements:
     - easyocr >= 1.7.0
+    - TextRecognitionDataGenerator
     - torch >= 2.0.0
     - See requirements.txt for full list
 """
@@ -97,6 +116,32 @@ class EasyOCRNutritionExtractor:
         self.model_storage_directory = model_storage_directory
         self.user_network_directory = user_network_directory
         self.reader: Optional[easyocr.Reader] = None
+        
+        # OCR Error Correction Patterns
+        # These patterns fix common misrecognitions found during testing
+        # e.g., '트랜스 지방' → '브랜스 지방', '단백질' → '탄백질'
+        self.ocr_corrections = {
+            # Common Korean OCR errors in nutrition labels
+            '브랜스': '트랜스',
+            '탄백질': '단백질',
+            '탄수하물': '탄수화물',
+            '탄수회물': '탄수화물',
+            '포화지밤': '포화지방',
+            '포화지망': '포화지방',
+            '나트류': '나트륨',
+            '나트룸': '나트륨',
+            '당규': '당류',
+            '당뉴': '당류',
+            '열랑': '열량',
+            '열링': '열량',
+            '콜레스테률': '콜레스테롤',
+            '콜래스테롤': '콜레스테롤',
+            '식이섭유': '식이섬유',  # Common confusion
+            '칼숨': '칼슘',
+            '철붐': '철분',
+            '비타밍': '비타민',
+            '비타맨': '비타민',
+        }
         
         # Regex patterns for nutrition extraction (Korean and English)
         self.patterns = {
@@ -184,9 +229,29 @@ class EasyOCRNutritionExtractor:
         
         return results
     
+    def correct_ocr_errors(self, text: str) -> str:
+        """
+        Apply post-processing to correct common OCR misrecognitions.
+        
+        This method addresses errors found during testing where the model
+        misreads certain Korean characters in nutrition labels.
+        
+        Args:
+            text: Raw OCR text output
+            
+        Returns:
+            Corrected text with common errors fixed
+        """
+        corrected = text
+        for wrong, correct in self.ocr_corrections.items():
+            corrected = corrected.replace(wrong, correct)
+        return corrected
+    
     def parse_nutrition(self, ocr_results: list) -> NutritionInfo:
         """
         Parse OCR results to extract nutrition information.
+        
+        Applies OCR error correction before extracting nutrition values.
         
         Args:
             ocr_results: List of OCR results from extract_text()
@@ -208,6 +273,8 @@ class EasyOCRNutritionExtractor:
             full_text = " ".join(ocr_results)
             avg_confidence = 0.0
         
+        # Apply OCR error correction
+        full_text = self.correct_ocr_errors(full_text)
         full_text_lower = full_text.lower()
         
         nutrition = NutritionInfo(
@@ -251,13 +318,32 @@ class EasyOCRDataPreparer:
     """
     Utility class for preparing training data for EasyOCR fine-tuning.
     
-    EasyOCR training requires data in a specific format:
-    - Images cropped to individual text lines
-    - Ground truth text labels
-    - Proper directory structure
+    Training Data Sources:
+    1. TextRecognitionDataGenerator: 1,000 Korean text samples
+    2. AI Hub pharmaceutical/cosmetic OCR: 50,000 labeled samples
+    3. Custom nutrition label data: 800 hand-labeled samples
     
-    This class helps convert existing annotations to the required format.
+    The training process uses 80:20 train/val split with 3155 epochs.
     """
+    
+    # Nutrition-specific vocabulary for data generation
+    NUTRITION_VOCABULARY = [
+        # Basic nutrition terms
+        '열량', '칼로리', 'kcal', '탄수화물', '당류', '식이섬유',
+        '단백질', '지방', '포화지방', '트랜스지방', '불포화지방',
+        '콜레스테롤', '나트륨', '칼슘', '철분', '칼륨',
+        # Vitamins
+        '비타민A', '비타민B', '비타민C', '비타민D', '비타민E',
+        # Units
+        'g', 'mg', 'μg', 'ml', '%',
+        # Common phrases
+        '1회 제공량', '총 내용량', '영양성분', '영양정보',
+        '1일 영양성분 기준치', '% 영양성분 기준치',
+        # Numbers (common in nutrition labels)
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        '10', '15', '20', '25', '30', '50', '100', '150', '200', '250',
+        '300', '400', '500', '1000',
+    ]
     
     def __init__(self, output_dir: str = "./easyocr_training_data"):
         """
@@ -269,11 +355,95 @@ class EasyOCRDataPreparer:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
+    def generate_korean_training_data(
+        self,
+        num_samples: int = 1000,
+        output_subdir: str = "korean_generated"
+    ):
+        """
+        Generate Korean text training data using TextRecognitionDataGenerator.
+        
+        This implements Stage 1 of the training pipeline:
+        - 1,000 Korean text samples for basic character recognition
+        
+        Args:
+            num_samples: Number of samples to generate (default: 1000)
+            output_subdir: Subdirectory for generated data
+            
+        Note: Requires trdg package: pip install trdg
+        """
+        try:
+            from trdg.generators import GeneratorFromStrings
+        except ImportError:
+            print("TextRecognitionDataGenerator not installed.")
+            print("Install with: pip install trdg")
+            print("\nCreating placeholder structure instead...")
+            self._create_generation_placeholder(output_subdir, num_samples)
+            return
+        
+        output_path = self.output_dir / output_subdir
+        output_path.mkdir(exist_ok=True)
+        
+        # Generate nutrition-specific Korean text samples
+        generator = GeneratorFromStrings(
+            strings=self.NUTRITION_VOCABULARY * (num_samples // len(self.NUTRITION_VOCABULARY) + 1),
+            language='ko',
+            size=32,  # Font size
+            skewing_angle=5,
+            random_skew=True,
+            blur=1,
+            random_blur=True,
+            background_type=0,  # Gaussian noise
+        )
+        
+        labels = []
+        for i, (img, text) in enumerate(generator):
+            if i >= num_samples:
+                break
+            
+            img_filename = f"korean_{i:05d}.jpg"
+            img.save(str(output_path / img_filename))
+            labels.append(f"{img_filename}\t{text}")
+        
+        # Save labels
+        with open(output_path / "labels.txt", 'w', encoding='utf-8') as f:
+            f.write('\n'.join(labels))
+        
+        print(f"Generated {len(labels)} Korean text samples")
+        print(f"Output: {output_path}")
+    
+    def _create_generation_placeholder(self, output_subdir: str, num_samples: int):
+        """Create placeholder structure when trdg is not available."""
+        output_path = self.output_dir / output_subdir
+        output_path.mkdir(exist_ok=True)
+        
+        readme = f"""
+# Korean Text Generation Data
+
+To generate Korean training data, install TextRecognitionDataGenerator:
+```bash
+pip install trdg
+```
+
+Then run:
+```bash
+python easyocr_trainer.py --generate-korean-data {num_samples}
+```
+
+This will generate {num_samples} Korean text images for training.
+
+Alternatively, manually add your Korean text images here with labels.txt file.
+"""
+        with open(output_path / "README.md", 'w', encoding='utf-8') as f:
+            f.write(readme)
+        
+        print(f"Created placeholder at: {output_path}")
+    
     def prepare_from_annotations(
         self,
         images_dir: str,
         annotations_file: str,
-        split_ratio: float = 0.9
+        split_ratio: float = 0.8  # Changed to 80:20 as per actual training
     ):
         """
         Prepare training data from annotated images.
@@ -290,7 +460,7 @@ class EasyOCRDataPreparer:
         Args:
             images_dir: Directory containing source images
             annotations_file: JSON file with text annotations
-            split_ratio: Train/val split ratio (default: 0.9 = 90% train)
+            split_ratio: Train/val split ratio (default: 0.8 = 80% train, 20% val)
         """
         images_dir = Path(images_dir)
         

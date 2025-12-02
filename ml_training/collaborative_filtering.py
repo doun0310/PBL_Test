@@ -1,31 +1,34 @@
 """
-Collaborative Filtering Training Script for Recipe Recommendations
+Collaborative Filtering for Food Recommendations based on Nutrition
 
-This script implements collaborative filtering algorithms for the diet tracking
-application's recipe recommendation system. It supports:
+This script implements a content-based collaborative filtering system for
+recommending foods based on remaining daily nutrition goals (calories, 
+carbohydrates, protein, fat).
 
-1. User-based Collaborative Filtering (K-NN with Pearson correlation)
-2. Item-based Collaborative Filtering
-3. Matrix Factorization (SVD) using the Surprise library
-4. Simple PyTorch-based Matrix Factorization
+Algorithm:
+==========
+1. Cosine Similarity Calculation:
+   - Uses sklearn's cosine_similarity to calculate similarity between foods
+   - Based on nutritional content (calories, carbs, protein, fat)
+   
+2. Predicted Preference Score:
+   - Combines user's historical preferences with food similarity
+   - Sorts by combined score to recommend suitable foods
 
-The trained models can be used to recommend recipes based on user preferences
-and historical rating patterns.
+3. Nutrition-based Filtering:
+   - Filters foods that fit within remaining daily nutrition goals
+   - Recommends foods that help meet but not exceed targets
 
 Usage:
-    # Train with Surprise library (SVD):
-    python collaborative_filtering.py --method svd --data user_item_matrix.csv
+    # Recommend foods based on remaining nutrition goals
+    python collaborative_filtering.py --remaining-cal 500 --remaining-carb 50 \\
+        --remaining-protein 30 --remaining-fat 20
     
-    # Train with PyTorch MF:
-    python collaborative_filtering.py --method pytorch_mf --data ratings.csv
-    
-    # Create sample data:
-    python collaborative_filtering.py --create-sample
+    # Train on user preference data
+    python collaborative_filtering.py --method cosine --data food_preferences.csv
 
 Requirements:
-    - scikit-surprise >= 1.1.3
     - scikit-learn >= 1.3.0
-    - torch >= 2.0.0
     - pandas >= 2.0.0
     - numpy >= 1.24.0
     - See requirements.txt for full list
@@ -42,6 +45,15 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+# Import sklearn's cosine_similarity (primary recommendation method)
+try:
+    from sklearn.metrics.pairwise import cosine_similarity
+    from sklearn.preprocessing import MinMaxScaler
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
+    print("Warning: scikit-learn not installed. Install with: pip install scikit-learn")
+
 # Try importing optional dependencies
 try:
     from surprise import Dataset, Reader, SVD, KNNBasic, KNNWithMeans
@@ -50,7 +62,6 @@ try:
     SURPRISE_AVAILABLE = True
 except ImportError:
     SURPRISE_AVAILABLE = False
-    print("Warning: scikit-surprise not installed. Install with: pip install scikit-surprise")
 
 try:
     import torch
@@ -60,17 +71,270 @@ try:
     TORCH_AVAILABLE = True
 except ImportError:
     TORCH_AVAILABLE = False
-    print("Warning: PyTorch not installed. Install with: pip install torch")
+
+
+@dataclass
+class FoodItem:
+    """Data class for food items with nutrition information."""
+    name: str
+    calories: float
+    carbohydrates: float
+    protein: float
+    fat: float
+    food_id: str = ""
+    category: str = ""
 
 
 @dataclass
 class RecommendationResult:
     """Data class for recommendation results."""
     user_id: str
-    recommendations: list = field(default_factory=list)  # List of (item_id, predicted_rating)
+    recommendations: list = field(default_factory=list)  # List of (food_name, score, nutrition)
     model_type: str = ""
-    rmse: Optional[float] = None
-    mae: Optional[float] = None
+    remaining_calories: float = 0.0
+
+
+class NutritionBasedRecommender:
+    """
+    Food Recommendation System using Cosine Similarity and Predicted Preference.
+    
+    This recommender uses sklearn's cosine_similarity to calculate similarity
+    between foods based on their nutritional content. It then combines this
+    with user preference history to recommend suitable foods.
+    
+    Algorithm:
+    1. Calculate cosine similarity matrix for all foods based on nutrition
+    2. Track user's food consumption history and preferences
+    3. For a given remaining nutrition budget, recommend foods that:
+       - Fit within the remaining calorie/macro budget
+       - Are similar to foods the user has liked before
+       - Have high predicted preference scores
+    """
+    
+    def __init__(self):
+        """Initialize the nutrition-based recommender."""
+        if not SKLEARN_AVAILABLE:
+            raise ImportError("scikit-learn not installed. Run: pip install scikit-learn")
+        
+        self.food_database: pd.DataFrame = None
+        self.similarity_matrix: np.ndarray = None
+        self.user_preferences: dict = {}  # user_id -> {food_id: rating}
+        self.scaler = MinMaxScaler()
+        self.food_names: list = []
+        self.food_ids: list = []
+    
+    def load_food_database(self, food_data: pd.DataFrame):
+        """
+        Load food database with nutrition information.
+        
+        Args:
+            food_data: DataFrame with columns:
+                       - food_id: Unique identifier
+                       - name: Food name
+                       - calories: kcal
+                       - carbohydrates: grams
+                       - protein: grams
+                       - fat: grams
+        """
+        required_cols = ['food_id', 'name', 'calories', 'carbohydrates', 'protein', 'fat']
+        for col in required_cols:
+            if col not in food_data.columns:
+                raise ValueError(f"Missing required column: {col}")
+        
+        self.food_database = food_data.copy()
+        self.food_names = food_data['name'].tolist()
+        self.food_ids = food_data['food_id'].tolist()
+        
+        # Calculate similarity matrix
+        self._compute_similarity_matrix()
+        
+        print(f"Loaded {len(self.food_database)} foods")
+    
+    def _compute_similarity_matrix(self):
+        """Compute cosine similarity matrix based on nutritional content."""
+        # Extract nutrition features
+        nutrition_features = self.food_database[
+            ['calories', 'carbohydrates', 'protein', 'fat']
+        ].values
+        
+        # Normalize features
+        normalized_features = self.scaler.fit_transform(nutrition_features)
+        
+        # Calculate cosine similarity
+        self.similarity_matrix = cosine_similarity(normalized_features)
+        
+        print("Computed food similarity matrix")
+    
+    def add_user_preference(self, user_id: str, food_id: str, rating: float):
+        """
+        Record a user's preference for a food item.
+        
+        Args:
+            user_id: User identifier
+            food_id: Food item identifier
+            rating: Rating (1-5 scale)
+        """
+        if user_id not in self.user_preferences:
+            self.user_preferences[user_id] = {}
+        
+        self.user_preferences[user_id][food_id] = rating
+    
+    def predict_preference(self, user_id: str, food_id: str) -> float:
+        """
+        Predict user's preference for a food using collaborative filtering.
+        
+        Uses weighted average of similar foods that user has rated.
+        
+        Args:
+            user_id: User identifier
+            food_id: Food to predict preference for
+            
+        Returns:
+            Predicted preference score (0-5)
+        """
+        if user_id not in self.user_preferences:
+            return 2.5  # Default neutral preference
+        
+        user_prefs = self.user_preferences[user_id]
+        
+        if food_id not in self.food_ids:
+            return 2.5
+        
+        food_idx = self.food_ids.index(food_id)
+        
+        # Calculate weighted preference based on similar foods user has rated
+        weighted_sum = 0.0
+        similarity_sum = 0.0
+        
+        for rated_food_id, rating in user_prefs.items():
+            if rated_food_id in self.food_ids:
+                rated_idx = self.food_ids.index(rated_food_id)
+                similarity = self.similarity_matrix[food_idx, rated_idx]
+                
+                weighted_sum += similarity * rating
+                similarity_sum += abs(similarity)
+        
+        if similarity_sum == 0:
+            return 2.5
+        
+        return weighted_sum / similarity_sum
+    
+    def recommend_foods(
+        self,
+        user_id: str,
+        remaining_calories: float,
+        remaining_carbs: float = None,
+        remaining_protein: float = None,
+        remaining_fat: float = None,
+        n: int = 10
+    ) -> list:
+        """
+        Recommend foods based on remaining nutrition goals.
+        
+        Args:
+            user_id: User identifier
+            remaining_calories: Remaining daily calories
+            remaining_carbs: Remaining carbohydrates (grams)
+            remaining_protein: Remaining protein (grams)
+            remaining_fat: Remaining fat (grams)
+            n: Number of recommendations to return
+            
+        Returns:
+            List of (food_name, combined_score, nutrition_dict) tuples
+        """
+        if self.food_database is None:
+            raise ValueError("Food database not loaded. Call load_food_database() first.")
+        
+        recommendations = []
+        
+        for idx, row in self.food_database.iterrows():
+            food_id = row['food_id']
+            
+            # Filter by remaining nutrition budget
+            if row['calories'] > remaining_calories:
+                continue
+            if remaining_carbs is not None and row['carbohydrates'] > remaining_carbs:
+                continue
+            if remaining_protein is not None and row['protein'] > remaining_protein:
+                continue
+            if remaining_fat is not None and row['fat'] > remaining_fat:
+                continue
+            
+            # Calculate predicted preference
+            preference_score = self.predict_preference(user_id, food_id)
+            
+            # Calculate how well the food fits the remaining budget (efficiency score)
+            calorie_efficiency = row['calories'] / remaining_calories if remaining_calories > 0 else 0
+            
+            # Combined score: preference + efficiency
+            combined_score = 0.6 * preference_score + 0.4 * (calorie_efficiency * 5)
+            
+            recommendations.append((
+                row['name'],
+                combined_score,
+                {
+                    'food_id': food_id,
+                    'calories': row['calories'],
+                    'carbohydrates': row['carbohydrates'],
+                    'protein': row['protein'],
+                    'fat': row['fat']
+                }
+            ))
+        
+        # Sort by combined score (descending)
+        recommendations.sort(key=lambda x: x[1], reverse=True)
+        
+        return recommendations[:n]
+    
+    def get_similar_foods(self, food_id: str, n: int = 5) -> list:
+        """
+        Get foods similar to a given food based on nutrition profile.
+        
+        Args:
+            food_id: Food to find similar items for
+            n: Number of similar foods to return
+            
+        Returns:
+            List of (food_name, similarity_score) tuples
+        """
+        if food_id not in self.food_ids:
+            return []
+        
+        food_idx = self.food_ids.index(food_id)
+        similarities = self.similarity_matrix[food_idx]
+        
+        # Get indices of most similar foods (excluding self)
+        similar_indices = np.argsort(similarities)[::-1][1:n+1]
+        
+        return [
+            (self.food_names[idx], similarities[idx])
+            for idx in similar_indices
+        ]
+    
+    def save(self, path: str):
+        """Save the recommender state."""
+        import pickle
+        with open(path, 'wb') as f:
+            pickle.dump({
+                'food_database': self.food_database,
+                'similarity_matrix': self.similarity_matrix,
+                'user_preferences': self.user_preferences,
+                'food_names': self.food_names,
+                'food_ids': self.food_ids
+            }, f)
+        print(f"Model saved to: {path}")
+    
+    def load(self, path: str):
+        """Load saved recommender state."""
+        import pickle
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+        
+        self.food_database = data['food_database']
+        self.similarity_matrix = data['similarity_matrix']
+        self.user_preferences = data['user_preferences']
+        self.food_names = data['food_names']
+        self.food_ids = data['food_ids']
 
 
 class BaseRecommender(ABC):
@@ -588,6 +852,63 @@ class PyTorchMFRecommender(BaseRecommender):
         self.model.eval()
 
 
+def create_sample_food_database(output_path: str = "./sample_food_database.csv"):
+    """
+    Create sample food database with nutrition information.
+    
+    This creates a dataset for testing the nutrition-based recommender.
+    """
+    np.random.seed(42)
+    
+    # Korean food items with typical nutrition values
+    foods = [
+        ("흰쌀밥", 300, 65, 5, 1),
+        ("김치찌개", 150, 8, 12, 8),
+        ("된장찌개", 120, 10, 8, 5),
+        ("비빔밥", 550, 70, 18, 15),
+        ("불고기", 280, 12, 25, 15),
+        ("삼겹살", 450, 2, 20, 40),
+        ("치킨", 350, 15, 25, 20),
+        ("잡채", 280, 35, 8, 12),
+        ("떡볶이", 380, 65, 8, 10),
+        ("김밥", 320, 45, 10, 12),
+        ("라면", 500, 70, 12, 18),
+        ("냉면", 450, 85, 10, 5),
+        ("자장면", 650, 95, 15, 20),
+        ("탕수육", 400, 40, 18, 18),
+        ("삼계탕", 450, 15, 35, 25),
+        ("갈비찜", 380, 20, 30, 20),
+        ("제육볶음", 320, 15, 22, 18),
+        ("닭갈비", 280, 20, 25, 12),
+        ("순두부찌개", 180, 8, 15, 10),
+        ("부대찌개", 420, 35, 20, 22),
+        ("샐러드", 80, 10, 3, 5),
+        ("고등어구이", 220, 0, 22, 14),
+        ("계란찜", 120, 2, 10, 8),
+        ("콩나물무침", 35, 5, 3, 1),
+        ("시금치나물", 25, 3, 2, 1),
+    ]
+    
+    data = []
+    for i, (name, cal, carb, prot, fat) in enumerate(foods):
+        data.append({
+            'food_id': f"food_{i:03d}",
+            'name': name,
+            'calories': cal + np.random.randint(-20, 20),
+            'carbohydrates': max(0, carb + np.random.randint(-5, 5)),
+            'protein': max(0, prot + np.random.randint(-2, 2)),
+            'fat': max(0, fat + np.random.randint(-3, 3))
+        })
+    
+    df = pd.DataFrame(data)
+    df.to_csv(output_path, index=False, encoding='utf-8')
+    
+    print(f"Sample food database created: {output_path}")
+    print(f"  - Foods: {len(data)}")
+    
+    return df
+
+
 def create_sample_data(output_path: str = "./sample_ratings.csv", n_users: int = 100, n_items: int = 50):
     """
     Create sample ratings data for testing.
@@ -647,7 +968,7 @@ def create_sample_data(output_path: str = "./sample_ratings.csv", n_users: int =
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Collaborative Filtering for Recipe Recommendations"
+        description="Collaborative Filtering for Food Recommendations"
     )
     
     # Data arguments
@@ -655,21 +976,26 @@ def main():
         "--data",
         type=str,
         default="ratings.csv",
-        help="Path to ratings CSV file (columns: user_id, item_id, rating)"
+        help="Path to data CSV file"
+    )
+    parser.add_argument(
+        "--food-database",
+        type=str,
+        help="Path to food database CSV (for nutrition-based recommendations)"
     )
     parser.add_argument(
         "--create-sample",
         action="store_true",
-        help="Create sample ratings data"
+        help="Create sample ratings and food database"
     )
     
     # Model arguments
     parser.add_argument(
         "--method",
         type=str,
-        choices=["svd", "knn_basic", "knn_means", "pytorch_mf"],
-        default="svd",
-        help="Recommendation algorithm to use"
+        choices=["cosine", "svd", "knn_basic", "knn_means", "pytorch_mf"],
+        default="cosine",
+        help="Recommendation algorithm (cosine=nutrition-based, default)"
     )
     parser.add_argument(
         "--n-factors",
@@ -694,6 +1020,28 @@ def main():
         type=int,
         default=40,
         help="Number of neighbors for KNN (default: 40)"
+    )
+    
+    # Nutrition-based recommendation arguments
+    parser.add_argument(
+        "--remaining-cal",
+        type=float,
+        help="Remaining daily calories for recommendations"
+    )
+    parser.add_argument(
+        "--remaining-carb",
+        type=float,
+        help="Remaining daily carbohydrates (grams)"
+    )
+    parser.add_argument(
+        "--remaining-protein",
+        type=float,
+        help="Remaining daily protein (grams)"
+    )
+    parser.add_argument(
+        "--remaining-fat",
+        type=float,
+        help="Remaining daily fat (grams)"
     )
     
     # Action arguments
@@ -723,10 +1071,58 @@ def main():
     
     # Create sample data if requested
     if args.create_sample:
+        create_sample_food_database("sample_food_database.csv")
         create_sample_data("sample_ratings.csv")
         return
     
-    # Load data
+    # Nutrition-based recommendations (cosine similarity method)
+    if args.method == "cosine":
+        if not SKLEARN_AVAILABLE:
+            print("Error: scikit-learn not installed")
+            return
+        
+        food_db_path = args.food_database or "sample_food_database.csv"
+        
+        if not os.path.exists(food_db_path):
+            print(f"Error: Food database not found: {food_db_path}")
+            print("Create sample data with: python collaborative_filtering.py --create-sample")
+            return
+        
+        recommender = NutritionBasedRecommender()
+        food_df = pd.read_csv(food_db_path)
+        recommender.load_food_database(food_df)
+        
+        # Get recommendations based on remaining nutrition
+        if args.remaining_cal:
+            print(f"\nRecommending foods for remaining {args.remaining_cal} kcal...")
+            recommendations = recommender.recommend_foods(
+                user_id=args.recommend_for or "default_user",
+                remaining_calories=args.remaining_cal,
+                remaining_carbs=args.remaining_carb,
+                remaining_protein=args.remaining_protein,
+                remaining_fat=args.remaining_fat,
+                n=args.n_recommendations
+            )
+            
+            print(f"\nTop {len(recommendations)} Food Recommendations:")
+            print("-" * 60)
+            for i, (name, score, nutrition) in enumerate(recommendations, 1):
+                print(f"{i}. {name} (score: {score:.2f})")
+                print(f"   Cal: {nutrition['calories']:.0f} | "
+                      f"Carb: {nutrition['carbohydrates']:.0f}g | "
+                      f"Prot: {nutrition['protein']:.0f}g | "
+                      f"Fat: {nutrition['fat']:.0f}g")
+            
+            if args.save_model:
+                recommender.save(args.save_model)
+            
+            return
+        else:
+            print("For cosine method, provide --remaining-cal")
+            print("Example: --remaining-cal 500 --remaining-carb 50 --remaining-protein 30")
+            return
+    
+    # Load data for other methods
     if not os.path.exists(args.data):
         print(f"Error: Data file not found: {args.data}")
         print("Create sample data with: python collaborative_filtering.py --create-sample")
