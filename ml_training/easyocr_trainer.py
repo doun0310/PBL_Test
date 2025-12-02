@@ -470,15 +470,9 @@ def main():
         help="Languages to use (default: ko en)"
     )
     parser.add_argument(
-        "--gpu",
-        action="store_true",
-        default=True,
-        help="Use GPU for inference"
-    )
-    parser.add_argument(
         "--no-gpu",
         action="store_true",
-        help="Disable GPU"
+        help="Disable GPU (uses CPU only). By default, GPU is used if available."
     )
     parser.add_argument(
         "--output-dir",
@@ -504,7 +498,7 @@ def main():
     
     # Run inference
     if args.infer:
-        use_gpu = args.gpu and not args.no_gpu
+        use_gpu = not args.no_gpu
         extractor = EasyOCRNutritionExtractor(
             languages=args.languages,
             gpu=use_gpu
