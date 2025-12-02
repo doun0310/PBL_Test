@@ -1,0 +1,85 @@
+# YOLO v11 Dataset Configuration Template
+# =========================================
+# This file defines the dataset structure for training YOLO models.
+# Modify the paths and class names according to your specific dataset.
+
+# Dataset paths (relative to this file or absolute paths)
+path: ./datasets/food_dataset  # Root directory of the dataset
+train: images/train            # Training images (relative to 'path')
+val: images/val                # Validation images (relative to 'path')
+test: images/test              # Test images (optional, relative to 'path')
+
+# Number of classes
+nc: 40
+
+# Class names - Korean food items for diet tracking application
+# These classes are customized for the diet tracking app
+names:
+  0: rice                    # 밥
+  1: kimchi                  # 김치
+  2: bulgogi                 # 불고기
+  3: bibimbap                # 비빔밥
+  4: samgyeopsal             # 삼겹살
+  5: japchae                 # 잡채
+  6: tteokbokki              # 떡볶이
+  7: fried_chicken           # 치킨
+  8: ramen                   # 라면
+  9: kimbap                  # 김밥
+  10: sundubu_jjigae         # 순두부찌개
+  11: kimchi_jjigae          # 김치찌개
+  12: doenjang_jjigae        # 된장찌개
+  13: samgyetang             # 삼계탕
+  14: galbi                  # 갈비
+  15: jajangmyeon            # 자장면
+  16: tangsuyuk              # 탕수육
+  17: mandu                  # 만두
+  18: naengmyeon             # 냉면
+  19: jokbal                 # 족발
+  20: bossam                 # 보쌈
+  21: sundae                 # 순대
+  22: gyeran_jjim            # 계란찜
+  23: kongnamul              # 콩나물
+  24: sigeumchi              # 시금치
+  25: myulchi                # 멸치볶음
+  26: pajeon                 # 파전
+  27: bindaetteok            # 빈대떡
+  28: jeon                   # 전
+  29: gukbap                 # 국밥
+  30: seolleongtang          # 설렁탕
+  31: yukgaejang             # 육개장
+  32: gamjatang              # 감자탕
+  33: budae_jjigae           # 부대찌개
+  34: haemul_jjigae          # 해물찌개
+  35: dwaeji_gukbap          # 돼지국밥
+  36: mul_naengmyeon         # 물냉면
+  37: bibim_naengmyeon       # 비빔냉면
+  38: salad                  # 샐러드
+  39: fruit                  # 과일
+
+# Dataset structure should look like:
+# datasets/food_dataset/
+# ├── images/
+# │   ├── train/
+# │   │   ├── img001.jpg
+# │   │   ├── img002.jpg
+# │   │   └── ...
+# │   ├── val/
+# │   │   ├── img101.jpg
+# │   │   └── ...
+# │   └── test/
+# │       ├── img201.jpg
+# │       └── ...
+# └── labels/
+#     ├── train/
+#     │   ├── img001.txt  # YOLO format: class_id x_center y_center width height
+#     │   └── ...
+#     ├── val/
+#     │   └── ...
+#     └── test/
+#         └── ...
+#
+# Label format (YOLO format):
+# Each .txt file contains one line per object:
+# <class_id> <x_center> <y_center> <width> <height>
+# All values are normalized (0-1) relative to image dimensions
+# Example: 0 0.5 0.5 0.3 0.4
