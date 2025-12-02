@@ -2,6 +2,8 @@
 
 이 문서는 YOLO v8, EasyOCR, Collaborative Filtering 모델을 학습시키는 방법을 단계별로 설명합니다.
 
+**데이터셋 소스: Kaggle 기반** (AI Hub 대체)
+
 ---
 
 ## 목차
@@ -19,7 +21,7 @@
 - Python 3.8 이상
 - CUDA 지원 GPU (권장: NVIDIA GTX 1080 이상)
 - 최소 16GB RAM
-- 최소 50GB 저장 공간 (데이터셋용)
+- 최소 20GB 저장 공간 (데이터셋용)
 
 ### 1.2 가상환경 생성 및 의존성 설치
 
@@ -38,9 +40,28 @@ cd ml_training
 
 # 의존성 설치
 pip install -r requirements.txt
+
+# Kaggle API 설치
+pip install kaggle
 ```
 
-### 1.3 GPU 확인
+### 1.3 Kaggle API 설정
+
+```bash
+# 1. https://www.kaggle.com/settings 접속
+# 2. "Create New Token" 클릭하여 kaggle.json 다운로드
+# 3. kaggle.json을 ~/.kaggle/ 폴더로 이동
+
+# Linux/Mac:
+mkdir -p ~/.kaggle
+mv ~/Downloads/kaggle.json ~/.kaggle/
+chmod 600 ~/.kaggle/kaggle.json
+
+# Windows:
+# C:\Users\<username>\.kaggle\kaggle.json 에 저장
+```
+
+### 1.4 GPU 확인
 
 ```python
 import torch
@@ -52,146 +73,95 @@ print(f"GPU 이름: {torch.cuda.get_device_name(0) if torch.cuda.is_available() 
 
 ## 2. YOLO v8 학습
 
-### 2.1 데이터셋 다운로드
+### 2.1 데이터셋 다운로드 (Kaggle)
 
-#### Stage 1: Food-11 데이터셋 (Kaggle)
-
-**방법 1: 웹에서 직접 다운로드**
-1. https://www.kaggle.com/datasets/trolukovich/food11-image-dataset 접속
-2. "Download" 버튼 클릭
-3. `food11-image-dataset.zip` 다운로드
-4. `ml_training/datasets/food11/`에 압축 해제
-
-**방법 2: Kaggle API 사용**
+#### 자동 다운로드 (권장)
 ```bash
-# Kaggle API 설치
-pip install kaggle
+# 디렉토리 구조 설정
+python download_datasets.py --setup-structure
 
-# Kaggle API 키 설정 (~/.kaggle/kaggle.json)
-# https://www.kaggle.com/settings에서 API 토큰 생성
+# 모든 데이터셋 다운로드
+python download_datasets.py --download-all
 
-# 다운로드
+# 또는 개별 다운로드
+python download_datasets.py --download-food11
+python download_datasets.py --download-korean-food
+```
+
+#### 수동 다운로드
+
+**Option A: Food-11 Dataset (기본)**
+```bash
+# Kaggle API 사용
 kaggle datasets download -d trolukovich/food11-image-dataset
 unzip food11-image-dataset.zip -d datasets/food11/
 ```
 
-#### Stage 2: AI Hub 한식 이미지 데이터셋
+**Option B: Korean Food Object Detection (한식 특화) ⭐**
+```bash
+# Kaggle API 사용 - YOLO 형식으로 제공됨
+kaggle datasets download -d jiminkoo/koreanfood-objectdetection-dataset
+unzip koreanfood-objectdetection-dataset.zip -d datasets/korean_food/
+```
 
-1. https://www.aihub.or.kr 회원가입 (한국 인증 필요)
-2. "건강관리를 위한 음식 이미지" 검색
-3. 데이터 신청 및 승인 대기
-4. 다운로드 후 `ml_training/datasets/korean_food/`에 압축 해제
+### 2.2 추가 데이터셋 (Roboflow)
 
-### 2.2 데이터 전처리
+더 많은 한식 이미지가 필요한 경우:
 
-AI Hub 데이터는 YOLO 형식으로 변환이 필요합니다:
+| Dataset | URL | Images | Classes |
+|---------|-----|--------|---------|
+| Korean Food Detector | [Roboflow](https://universe.roboflow.com/capstone-design-yolo-datasets/korean-food-detector-ouxym) | 2,482 | 다수 |
+| Korean Food (DongA) | [Roboflow](https://universe.roboflow.com/donga-university-1jxx6/korean-food-rgogz) | 959 | 53 |
+| Korean Food YOLOv5 | [Roboflow](https://universe.roboflow.com/dsupod/korean-food_yolov5-wwfz0) | 991 | 51 |
+
+**Roboflow 다운로드 방법:**
+1. 위 URL 접속
+2. "Download Dataset" 클릭
+3. "YOLO v8" 형식 선택
+4. `datasets/korean_food_extra/`에 압축 해제
+
+### 2.3 데이터셋 병합 (선택사항)
+
+여러 데이터셋을 합치려면:
 
 ```python
-# convert_aihub_to_yolo.py
-import os
-import json
+# merge_datasets.py
 import shutil
 from pathlib import Path
 
-def convert_aihub_to_yolo(aihub_dir, output_dir, selected_classes=154):
-    """
-    AI Hub 음식 이미지 데이터를 YOLO 형식으로 변환
+def merge_yolo_datasets(datasets_list, output_dir):
+    """여러 YOLO 데이터셋을 하나로 병합"""
+    output = Path(output_dir)
+    (output / "images" / "train").mkdir(parents=True, exist_ok=True)
+    (output / "images" / "val").mkdir(parents=True, exist_ok=True)
+    (output / "labels" / "train").mkdir(parents=True, exist_ok=True)
+    (output / "labels" / "val").mkdir(parents=True, exist_ok=True)
     
-    Args:
-        aihub_dir: AI Hub 데이터 디렉토리
-        output_dir: YOLO 형식 출력 디렉토리
-        selected_classes: 선택할 클래스 수 (기본: 154)
-    """
-    # 출력 디렉토리 생성
-    images_train = Path(output_dir) / "images" / "train"
-    images_val = Path(output_dir) / "images" / "val"
-    labels_train = Path(output_dir) / "labels" / "train"
-    labels_val = Path(output_dir) / "labels" / "val"
-    
-    for d in [images_train, images_val, labels_train, labels_val]:
-        d.mkdir(parents=True, exist_ok=True)
-    
-    # JSON 어노테이션 파일 처리
-    annotation_dir = Path(aihub_dir) / "annotations"
-    image_dir = Path(aihub_dir) / "images"
-    
-    class_mapping = {}  # 클래스 이름 -> 인덱스
-    current_class_idx = 0
-    
-    for json_file in annotation_dir.glob("*.json"):
-        with open(json_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        # 이미지 정보
-        image_info = data.get('images', [{}])[0]
-        image_filename = image_info.get('file_name', '')
-        img_width = image_info.get('width', 640)
-        img_height = image_info.get('height', 640)
-        
-        # 어노테이션 처리
-        annotations = data.get('annotations', [])
-        yolo_labels = []
-        
-        for ann in annotations:
-            category_name = ann.get('category_name', '')
-            
-            # 클래스 수 제한
-            if category_name not in class_mapping:
-                if current_class_idx >= selected_classes:
-                    continue
-                class_mapping[category_name] = current_class_idx
-                current_class_idx += 1
-            
-            class_idx = class_mapping[category_name]
-            
-            # Bounding box 변환 (x, y, w, h -> YOLO 형식)
-            bbox = ann.get('bbox', [0, 0, 0, 0])
-            x, y, w, h = bbox
-            
-            # YOLO 형식: center_x, center_y, width, height (정규화)
-            center_x = (x + w / 2) / img_width
-            center_y = (y + h / 2) / img_height
-            norm_w = w / img_width
-            norm_h = h / img_height
-            
-            yolo_labels.append(f"{class_idx} {center_x:.6f} {center_y:.6f} {norm_w:.6f} {norm_h:.6f}")
-        
-        if yolo_labels:
-            # Train/Val 분할 (80:20)
-            import random
-            is_train = random.random() < 0.8
-            
-            # 이미지 복사
-            src_image = image_dir / image_filename
-            if src_image.exists():
-                dst_image = (images_train if is_train else images_val) / image_filename
-                shutil.copy(src_image, dst_image)
-                
-                # 레이블 저장
-                label_filename = Path(image_filename).stem + ".txt"
-                dst_label = (labels_train if is_train else labels_val) / label_filename
-                with open(dst_label, 'w') as f:
-                    f.write('\n'.join(yolo_labels))
-    
-    # 클래스 매핑 저장
-    with open(Path(output_dir) / "classes.txt", 'w', encoding='utf-8') as f:
-        for name, idx in sorted(class_mapping.items(), key=lambda x: x[1]):
-            f.write(f"{name}\n")
-    
-    print(f"변환 완료: {len(class_mapping)}개 클래스")
-    return class_mapping
+    for dataset_dir in datasets_list:
+        dataset = Path(dataset_dir)
+        # 이미지 복사
+        for img in dataset.rglob("*.jpg"):
+            if "train" in str(img):
+                shutil.copy(img, output / "images" / "train" / img.name)
+            elif "val" in str(img):
+                shutil.copy(img, output / "images" / "val" / img.name)
+        # 레이블 복사
+        for lbl in dataset.rglob("*.txt"):
+            if "train" in str(lbl):
+                shutil.copy(lbl, output / "labels" / "train" / lbl.name)
+            elif "val" in str(lbl):
+                shutil.copy(lbl, output / "labels" / "val" / lbl.name)
 
-# 실행
-if __name__ == "__main__":
-    convert_aihub_to_yolo(
-        aihub_dir="datasets/aihub_raw",
-        output_dir="datasets/korean_food"
-    )
+# 사용 예시
+merge_yolo_datasets([
+    "datasets/korean_food",
+    "datasets/korean_food_extra"
+], "datasets/korean_food_merged")
 ```
 
-### 2.3 data.yaml 설정
+### 2.4 data.yaml 설정
 
-`data.yaml` 파일을 데이터셋 경로에 맞게 수정:
+Kaggle Korean Food 데이터셋은 이미 YOLO 형식으로 제공되므로 `data.yaml`만 경로 설정:
 
 ```yaml
 # data.yaml
@@ -199,17 +169,17 @@ path: ./datasets/korean_food  # 데이터셋 루트 경로
 train: images/train
 val: images/val
 
-# 클래스 수
-nc: 154
+# 클래스 수 (데이터셋에 따라 조정)
+nc: 53  # Korean Food Object Detection 기준
 
-# 클래스 이름 (classes.txt에서 로드)
+# 클래스 이름 (데이터셋의 classes.txt 또는 data.yaml 참조)
 names:
-  0: white_rice
-  1: kimchi_jjigae
-  # ... (data.yaml 참조)
+  0: rice
+  1: kimchi
+  # ... (다운로드한 데이터셋의 data.yaml 참조)
 ```
 
-### 2.4 학습 실행
+### 2.5 학습 실행
 
 ```bash
 # 기본 학습 (GPU 사용)
@@ -229,7 +199,7 @@ python yolo_training.py \
 python yolo_training.py --data data.yaml --epochs 50 --batch 8 --device cpu
 ```
 
-### 2.5 학습 모니터링
+### 2.6 학습 모니터링
 
 학습 진행 상황은 `runs/train/food_detection/` 디렉토리에서 확인:
 
@@ -240,7 +210,7 @@ tensorboard --logdir runs/train/
 # 브라우저에서 http://localhost:6006 접속
 ```
 
-### 2.6 모델 내보내기 (TFLite)
+### 2.7 모델 내보내기 (TFLite)
 
 ```bash
 # TFLite로 내보내기 (모바일 배포용)
@@ -253,21 +223,26 @@ python yolo_training.py --export tflite --imgsz 640
 
 ## 3. EasyOCR 학습
 
-### 3.1 데이터셋 준비
+### 3.1 데이터셋 준비 (Kaggle)
 
-#### Stage 1: 한글 합성 데이터 생성
+#### Option A: Nutritional Facts from Food Label (Kaggle) ⭐
+```bash
+# Kaggle에서 영양 성분표 OCR 데이터셋 다운로드
+kaggle datasets download -d shensivam/nutritional-facts-from-food-label
+unzip nutritional-facts-from-food-label.zip -d datasets/nutrition_ocr/
+
+# 또는 자동 다운로드
+python download_datasets.py --download-nutrition-ocr
+```
+
+#### Option B: 한글 합성 데이터 생성 (TextRecognitionDataGenerator)
 
 ```bash
 # TextRecognitionDataGenerator로 한글 데이터 생성
 python easyocr_trainer.py --generate-korean-data 1000 --output-dir datasets/easyocr/korean_generated
 ```
 
-#### Stage 2: AI Hub OCR 데이터셋
-
-1. https://www.aihub.or.kr 에서 "의약품, 화장품 패키징 OCR 데이터" 다운로드
-2. `datasets/easyocr/aihub_ocr/`에 압축 해제
-
-#### Stage 3: 커스텀 성분표 데이터
+#### Option C: 커스텀 성분표 데이터 (직접 수집)
 
 직접 성분표 이미지를 촬영하고 레이블링:
 

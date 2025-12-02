@@ -6,63 +6,83 @@ This directory contains training scripts for the AI/ML models used in the diet t
 
 | Model | Purpose | Dataset Size |
 |-------|---------|--------------|
-| YOLO v8 | Korean food detection | 289,426 images |
-| EasyOCR | Nutrition label OCR | 51,800 samples |
+| YOLO v8 | Korean food detection | ~20,000+ images |
+| EasyOCR | Nutrition label OCR | ~10,000+ samples |
 | Collaborative Filtering | Food recommendations | User preference data |
 
 ---
 
-## Dataset Sources
+## Dataset Sources (Kaggle)
 
 ### 1. YOLO v8 - Food Detection
 
-#### Stage 1: Food-11 Image Dataset (Kaggle)
+#### Option A: Food-11 Image Dataset (Kaggle) - 기본
 - **Source**: https://www.kaggle.com/datasets/trolukovich/food11-image-dataset
 - **Size**: 16,643 images
 - **Purpose**: Train YOLO to recognize food vs non-food objects
 - **Classes**: 11 food categories (Bread, Dairy, Dessert, Egg, Fried food, Meat, Noodles, Rice, Seafood, Soup, Vegetable)
 
 **Download Instructions:**
-1. Create a Kaggle account at https://www.kaggle.com
-2. Go to https://www.kaggle.com/datasets/trolukovich/food11-image-dataset
-3. Click "Download" button
-4. Extract to `datasets/food11/`
+```bash
+# Kaggle API 사용
+kaggle datasets download -d trolukovich/food11-image-dataset
+unzip food11-image-dataset.zip -d datasets/food11/
+```
 
-#### Stage 2: AI Hub Korean Food Images (건강관리를 위한 음식 이미지)
-- **Source**: https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=data&dataSetSn=74
-- **Original Size**: 3,000,000 images (3,500 classes)
-- **Reduced Size**: 272,783 images (154 classes - selected for training)
-- **Purpose**: Fine-tune for specific Korean food classification
+#### Option B: Korean Food Object Detection (Kaggle) - 한식 특화 ⭐
+- **Source**: https://www.kaggle.com/datasets/jiminkoo/koreanfood-objectdetection-dataset
+- **Size**: ~3,000+ images
+- **Purpose**: Korean food object detection with bounding box annotations
+- **Format**: YOLO format ready
 
 **Download Instructions:**
-1. Create an AI Hub account at https://www.aihub.or.kr (Korean ID required)
-2. Navigate to the dataset page
-3. Request access and download
-4. Extract to `datasets/korean_food/`
+```bash
+kaggle datasets download -d jiminkoo/koreanfood-objectdetection-dataset
+unzip koreanfood-objectdetection-dataset.zip -d datasets/korean_food/
+```
+
+#### Option C: Roboflow Korean Food Datasets (추가 데이터)
+더 많은 한식 이미지가 필요한 경우 Roboflow에서 추가 데이터를 다운로드할 수 있습니다:
+
+| Dataset | Source | Images | Classes |
+|---------|--------|--------|---------|
+| Korean Food Detector | [Roboflow](https://universe.roboflow.com/capstone-design-yolo-datasets/korean-food-detector-ouxym) | 2,482 | 다수 |
+| Korean Food (DongA Univ) | [Roboflow](https://universe.roboflow.com/donga-university-1jxx6/korean-food-rgogz) | 959 | 53 |
+| Korean Food YOLOv5 | [Roboflow](https://universe.roboflow.com/dsupod/korean-food_yolov5-wwfz0) | 991 | 51 |
 
 ---
 
 ### 2. EasyOCR - Nutrition Label Recognition
 
-#### Stage 1: Korean Text Data (Generated)
+#### Option A: Nutritional Facts from Food Label (Kaggle) ⭐
+- **Source**: https://www.kaggle.com/datasets/shensivam/nutritional-facts-from-food-label
+- **Size**: 영양 성분표 이미지 + 레이블
+- **Purpose**: Nutrition label OCR training
+
+**Download Instructions:**
+```bash
+kaggle datasets download -d shensivam/nutritional-facts-from-food-label
+unzip nutritional-facts-from-food-label.zip -d datasets/nutrition_ocr/
+```
+
+#### Option B: Korean OCR Dataset (Hugging Face)
+- **Source**: https://huggingface.co/datasets/leeloolee/Korean_OCR
+- **Purpose**: General Korean text OCR training
+
+#### Option C: Korean Text Generation (자체 생성)
 - **Tool**: TextRecognitionDataGenerator (trdg)
-- **Size**: 1,000 samples
-- **Purpose**: Basic Korean character recognition
+- **Size**: 1,000+ samples (customizable)
+- **Purpose**: Korean character recognition for nutrition terms
 
 **Generate with:**
 ```bash
 python easyocr_trainer.py --generate-korean-data 1000
 ```
 
-#### Stage 2: AI Hub Pharmaceutical/Cosmetic OCR Data (의약품, 화장품 패키징 OCR 데이터)
-- **Source**: https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=data&dataSetSn=88
-- **Size**: 50,000 labeled samples
-- **Purpose**: Product label text recognition training
-
-#### Stage 3: Custom Nutrition Labels
-- **Size**: 800 manually labeled samples
-- **Purpose**: Fine-tuning for nutrition-specific terms (탄수화물, 포화지방, etc.)
-- **Note**: This dataset was manually captured and labeled
+#### Option D: Custom Nutrition Labels (직접 수집)
+- **Size**: 800+ manually labeled samples
+- **Purpose**: Fine-tuning for nutrition-specific Korean terms (탄수화물, 포화지방, etc.)
+- **Note**: Capture and label nutrition labels from Korean products
 
 ---
 
@@ -90,16 +110,17 @@ ml_training/
 │   │   ├── training/
 │   │   ├── validation/
 │   │   └── evaluation/
-│   ├── korean_food/               # AI Hub Korean food dataset
+│   ├── korean_food/               # Kaggle Korean Food dataset (YOLO format)
 │   │   ├── images/
 │   │   │   ├── train/
 │   │   │   └── val/
 │   │   └── labels/
 │   │       ├── train/
 │   │       └── val/
+│   ├── nutrition_ocr/             # Kaggle Nutrition Facts OCR
+│   │   └── ...
 │   └── easyocr/                   # EasyOCR training data
 │       ├── korean_generated/
-│       ├── aihub_ocr/
 │       └── nutrition_labels/
 ├── data.yaml                      # YOLO dataset configuration
 ├── yolo_training.py               # YOLO training script
@@ -116,12 +137,19 @@ ml_training/
 ```bash
 cd ml_training
 pip install -r requirements.txt
+
+# Kaggle API 설정
+pip install kaggle
+# ~/.kaggle/kaggle.json 파일 설정 필요 (https://www.kaggle.com/settings에서 API 토큰 생성)
 ```
 
 ### 2. Prepare Datasets
 ```bash
-# Download datasets manually from sources above, then:
+# 디렉토리 구조 설정
 python download_datasets.py --setup-structure
+
+# Kaggle 데이터셋 다운로드
+python download_datasets.py --download-all
 ```
 
 ### 3. Train Models
@@ -155,7 +183,7 @@ python collaborative_filtering.py --method cosine --remaining-cal 500 --remainin
 - **Epochs**: 100-200 recommended
 - **Batch Size**: 16 (adjust based on GPU memory)
 - **Image Size**: 640x640
-- **Classes**: 154 Korean food items
+- **Classes**: 53-154 Korean food items (dataset dependent)
 
 ### EasyOCR
 - **Epochs**: 3155 (as used in original training)
