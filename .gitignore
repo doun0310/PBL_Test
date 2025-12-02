@@ -81,4 +81,9 @@ wandb/
 
 # Sample data (generated)
 sample_ratings.csv
+sample_food_database.csv
 easyocr_training_data/
+
+# ML Training Datasets (large files - download separately)
+ml_training/datasets/
+datasets/
