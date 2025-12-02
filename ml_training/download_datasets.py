@@ -63,6 +63,14 @@ class KaggleDatasetDownloader:
             'size': 'Nutrition label images',
             'purpose': 'OCR training for nutrition labels',
             'output_dir': 'nutrition_ocr'
+        },
+        'korean_ocr': {
+            'name': 'Handwriting OCR Data (Japanese/Korean)',
+            'kaggle_id': 'nexdatafrank/handwriting-ocr-data-of-japanese-and-korean',
+            'url': 'https://www.kaggle.com/datasets/nexdatafrank/handwriting-ocr-data-of-japanese-and-korean',
+            'size': 'Korean/Japanese handwriting images',
+            'purpose': 'Korean text recognition training',
+            'output_dir': 'korean_ocr'
         }
     }
     
@@ -312,6 +320,11 @@ def main():
         help="Roboflow 추가 데이터셋 안내"
     )
     parser.add_argument(
+        "--download-korean-ocr",
+        action="store_true",
+        help="Handwriting OCR Data (Japanese/Korean) 데이터셋 다운로드"
+    )
+    parser.add_argument(
         "--base-dir",
         type=str,
         default="./datasets",
@@ -335,6 +348,9 @@ def main():
     elif args.download_nutrition_ocr:
         if downloader.check_kaggle_api():
             downloader.download_dataset('nutrition_ocr')
+    elif args.download_korean_ocr:
+        if downloader.check_kaggle_api():
+            downloader.download_dataset('korean_ocr')
     elif args.verify:
         downloader.verify_datasets()
     elif args.show_roboflow:

@@ -235,14 +235,24 @@ unzip nutritional-facts-from-food-label.zip -d datasets/nutrition_ocr/
 python download_datasets.py --download-nutrition-ocr
 ```
 
-#### Option B: 한글 합성 데이터 생성 (TextRecognitionDataGenerator)
+#### Option B: Handwriting OCR Data (Japanese/Korean) (Kaggle) ⭐
+```bash
+# Kaggle에서 한국어/일본어 손글씨 OCR 데이터셋 다운로드
+kaggle datasets download -d nexdatafrank/handwriting-ocr-data-of-japanese-and-korean
+unzip handwriting-ocr-data-of-japanese-and-korean.zip -d datasets/korean_ocr/
+
+# 또는 자동 다운로드
+python download_datasets.py --download-korean-ocr
+```
+
+#### Option C: 한글 합성 데이터 생성 (TextRecognitionDataGenerator)
 
 ```bash
 # TextRecognitionDataGenerator로 한글 데이터 생성
 python easyocr_trainer.py --generate-korean-data 1000 --output-dir datasets/easyocr/korean_generated
 ```
 
-#### Option C: 커스텀 성분표 데이터 (직접 수집)
+#### Option D: 커스텀 성분표 데이터 (직접 수집)
 
 직접 성분표 이미지를 촬영하고 레이블링:
 
@@ -269,10 +279,10 @@ img_005.jpg	트랜스지방 0g
 ### 3.2 데이터 전처리
 
 ```bash
-# AI Hub OCR 데이터를 EasyOCR 형식으로 변환
+# OCR 데이터를 EasyOCR 형식으로 변환
 python easyocr_trainer.py --prepare-data \
-    datasets/easyocr/aihub_ocr/images \
-    datasets/easyocr/aihub_ocr/annotations.json \
+    datasets/nutrition_ocr/images \
+    datasets/nutrition_ocr/annotations.json \
     --output-dir datasets/easyocr/prepared
 ```
 

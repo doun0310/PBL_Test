@@ -65,9 +65,16 @@ kaggle datasets download -d shensivam/nutritional-facts-from-food-label
 unzip nutritional-facts-from-food-label.zip -d datasets/nutrition_ocr/
 ```
 
-#### Option B: Korean OCR Dataset (Hugging Face)
-- **Source**: https://huggingface.co/datasets/leeloolee/Korean_OCR
-- **Purpose**: General Korean text OCR training
+#### Option B: Handwriting OCR Data (Japanese/Korean) (Kaggle) ⭐
+- **Source**: https://www.kaggle.com/datasets/nexdatafrank/handwriting-ocr-data-of-japanese-and-korean
+- **Size**: 일본어/한국어 손글씨 이미지
+- **Purpose**: Korean text recognition training
+
+**Download Instructions:**
+```bash
+kaggle datasets download -d nexdatafrank/handwriting-ocr-data-of-japanese-and-korean
+unzip handwriting-ocr-data-of-japanese-and-korean.zip -d datasets/korean_ocr/
+```
 
 #### Option C: Korean Text Generation (자체 생성)
 - **Tool**: TextRecognitionDataGenerator (trdg)
