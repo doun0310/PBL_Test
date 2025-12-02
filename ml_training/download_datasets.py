@@ -1,31 +1,31 @@
 """
-Dataset Download and Setup Helper Script
+Dataset Download and Setup Helper Script (Kaggle 기반)
 
-This script helps set up the directory structure for ML training datasets
-and provides guidance on downloading required datasets.
-
-Note: Most datasets require manual download due to:
-- Kaggle API authentication
-- AI Hub account registration (Korean ID required)
+Kaggle에서 학습 데이터셋을 다운로드하고 설정하는 스크립트입니다.
 
 Usage:
-    # Set up directory structure
+    # 디렉토리 구조 설정
     python download_datasets.py --setup-structure
     
-    # Download Food-11 from Kaggle (requires kaggle.json credentials)
-    python download_datasets.py --download-food11
+    # 모든 Kaggle 데이터셋 다운로드
+    python download_datasets.py --download-all
     
-    # Verify dataset structure
+    # 개별 다운로드
+    python download_datasets.py --download-food11
+    python download_datasets.py --download-korean-food
+    python download_datasets.py --download-nutrition-ocr
+    
+    # 데이터셋 검증
     python download_datasets.py --verify
 
 Requirements:
-    - kaggle (for Kaggle dataset download)
-    - requests
-    - tqdm
+    - kaggle (pip install kaggle)
+    - kaggle.json 설정 필요 (~/.kaggle/kaggle.json)
 """
 
 import argparse
 import os
+import subprocess
 import zipfile
 from pathlib import Path
 
@@ -35,32 +35,64 @@ except ImportError:
     tqdm = None
 
 
-class DatasetSetup:
-    """Helper class for setting up ML training datasets."""
+class KaggleDatasetDownloader:
+    """Kaggle 데이터셋 다운로드 헬퍼 클래스."""
     
-    # Dataset information
+    # Kaggle 데이터셋 정보
     DATASETS = {
         'food11': {
             'name': 'Food-11 Image Dataset',
-            'source': 'Kaggle',
+            'kaggle_id': 'trolukovich/food11-image-dataset',
             'url': 'https://www.kaggle.com/datasets/trolukovich/food11-image-dataset',
-            'kaggle_dataset': 'trolukovich/food11-image-dataset',
             'size': '16,643 images',
-            'purpose': 'Food vs non-food classification for YOLO'
+            'purpose': 'Food vs non-food classification for YOLO',
+            'output_dir': 'food11'
         },
         'korean_food': {
-            'name': 'AI Hub Korean Food Images',
-            'source': 'AI Hub',
-            'url': 'https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=data&dataSetSn=74',
-            'size': '272,783 images (reduced from 3M)',
-            'purpose': 'Korean food classification (154 classes)'
+            'name': 'Korean Food Object Detection',
+            'kaggle_id': 'jiminkoo/koreanfood-objectdetection-dataset',
+            'url': 'https://www.kaggle.com/datasets/jiminkoo/koreanfood-objectdetection-dataset',
+            'size': '~3,000+ images',
+            'purpose': 'Korean food object detection (YOLO format)',
+            'output_dir': 'korean_food'
         },
-        'aihub_ocr': {
-            'name': 'AI Hub Pharmaceutical/Cosmetic OCR',
-            'source': 'AI Hub',
-            'url': 'https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=data&dataSetSn=88',
-            'size': '50,000 labeled samples',
-            'purpose': 'Product label OCR training'
+        'nutrition_ocr': {
+            'name': 'Nutritional Facts from Food Label',
+            'kaggle_id': 'shensivam/nutritional-facts-from-food-label',
+            'url': 'https://www.kaggle.com/datasets/shensivam/nutritional-facts-from-food-label',
+            'size': 'Nutrition label images',
+            'purpose': 'OCR training for nutrition labels',
+            'output_dir': 'nutrition_ocr'
+        },
+        'korean_ocr': {
+            'name': 'Handwriting OCR Data (Japanese/Korean)',
+            'kaggle_id': 'nexdatafrank/handwriting-ocr-data-of-japanese-and-korean',
+            'url': 'https://www.kaggle.com/datasets/nexdatafrank/handwriting-ocr-data-of-japanese-and-korean',
+            'size': 'Korean/Japanese handwriting images',
+            'purpose': 'Korean text recognition training',
+            'output_dir': 'korean_ocr'
+        }
+    }
+    
+    # Roboflow 추가 데이터셋 (수동 다운로드 필요)
+    ROBOFLOW_DATASETS = {
+        'korean_food_detector': {
+            'name': 'Korean Food Detector',
+            'url': 'https://universe.roboflow.com/capstone-design-yolo-datasets/korean-food-detector-ouxym',
+            'size': '2,482 images',
+            'purpose': 'Korean food detection with bounding boxes'
+        },
+        'korean_food_donga': {
+            'name': 'Korean Food (DongA University)',
+            'url': 'https://universe.roboflow.com/donga-university-1jxx6/korean-food-rgogz',
+            'size': '959 images, 53 classes',
+            'purpose': 'Korean food classification'
+        },
+        'korean_food_yolov5': {
+            'name': 'Korean Food YOLOv5',
+            'url': 'https://universe.roboflow.com/dsupod/korean-food_yolov5-wwfz0',
+            'size': '991 images, 51 classes',
+            'purpose': 'Korean food detection for restaurants/apps'
         }
     }
     
@@ -68,11 +100,32 @@ class DatasetSetup:
         """Initialize with base directory for datasets."""
         self.base_dir = Path(base_dir)
     
+    def check_kaggle_api(self) -> bool:
+        """Kaggle API 설치 및 인증 확인."""
+        try:
+            import kaggle
+            # 인증 확인
+            kaggle.api.authenticate()
+            print("✓ Kaggle API 인증 성공")
+            return True
+        except ImportError:
+            print("✗ Kaggle 패키지가 설치되지 않았습니다.")
+            print("  설치: pip install kaggle")
+            return False
+        except Exception as e:
+            print(f"✗ Kaggle 인증 실패: {e}")
+            print("\n  Kaggle API 설정 방법:")
+            print("  1. https://www.kaggle.com/settings 접속")
+            print("  2. 'Create New Token' 클릭")
+            print("  3. 다운로드된 kaggle.json을 ~/.kaggle/kaggle.json으로 이동")
+            print("  4. chmod 600 ~/.kaggle/kaggle.json (Linux/Mac)")
+            return False
+    
     def setup_directory_structure(self):
-        """Create the required directory structure for all datasets."""
+        """데이터셋 디렉토리 구조 생성."""
         print("Setting up dataset directory structure...")
         
-        # YOLO datasets
+        # YOLO 데이터셋 디렉토리
         yolo_dirs = [
             self.base_dir / "food11" / "training",
             self.base_dir / "food11" / "validation",
@@ -83,11 +136,10 @@ class DatasetSetup:
             self.base_dir / "korean_food" / "labels" / "val",
         ]
         
-        # EasyOCR datasets
+        # EasyOCR 데이터셋 디렉토리
         ocr_dirs = [
+            self.base_dir / "nutrition_ocr",
             self.base_dir / "easyocr" / "korean_generated",
-            self.base_dir / "easyocr" / "aihub_ocr" / "train",
-            self.base_dir / "easyocr" / "aihub_ocr" / "val",
             self.base_dir / "easyocr" / "nutrition_labels" / "train",
             self.base_dir / "easyocr" / "nutrition_labels" / "val",
         ]
@@ -98,224 +150,233 @@ class DatasetSetup:
             dir_path.mkdir(parents=True, exist_ok=True)
             print(f"  Created: {dir_path}")
         
-        # Create placeholder README files
-        self._create_placeholder_readme(
-            self.base_dir / "food11" / "README.md",
-            "Food-11 Dataset",
-            self.DATASETS['food11']
-        )
-        self._create_placeholder_readme(
-            self.base_dir / "korean_food" / "README.md",
-            "Korean Food Dataset",
-            self.DATASETS['korean_food']
-        )
-        self._create_placeholder_readme(
-            self.base_dir / "easyocr" / "README.md",
-            "EasyOCR Training Data",
-            self.DATASETS['aihub_ocr']
-        )
-        
-        print("\nDirectory structure created successfully!")
-        print("\nNext steps:")
-        print("1. Download Food-11 from Kaggle: https://www.kaggle.com/datasets/trolukovich/food11-image-dataset")
-        print("2. Register at AI Hub (Korean ID required): https://www.aihub.or.kr")
-        print("3. Download Korean food dataset from AI Hub")
-        print("4. Extract datasets to their respective directories")
+        print("\n✓ 디렉토리 구조 생성 완료!")
     
-    def _create_placeholder_readme(self, path: Path, title: str, info: dict):
-        """Create a placeholder README for a dataset directory."""
-        content = f"""# {title}
-
-## Dataset Information
-- **Name**: {info['name']}
-- **Source**: {info['source']}
-- **URL**: {info['url']}
-- **Size**: {info['size']}
-- **Purpose**: {info['purpose']}
-
-## Download Instructions
-
-1. Visit the URL above
-2. Create an account if required
-3. Download the dataset
-4. Extract files to this directory
-
-## Status
-[ ] Not yet downloaded
-"""
-        path.write_text(content, encoding='utf-8')
-    
-    def download_food11_kaggle(self):
-        """Download Food-11 dataset from Kaggle using Kaggle API."""
-        try:
-            import kaggle
-        except ImportError:
-            print("Error: kaggle package not installed.")
-            print("Install with: pip install kaggle")
-            print("\nAlternatively, download manually from:")
-            print(self.DATASETS['food11']['url'])
+    def download_dataset(self, dataset_key: str) -> bool:
+        """Kaggle 데이터셋 다운로드."""
+        if dataset_key not in self.DATASETS:
+            print(f"Unknown dataset: {dataset_key}")
             return False
         
-        # Check for Kaggle credentials
-        kaggle_json = Path.home() / ".kaggle" / "kaggle.json"
-        if not kaggle_json.exists():
-            print("Error: Kaggle credentials not found.")
-            print("\nTo set up Kaggle API:")
-            print("1. Go to https://www.kaggle.com/settings")
-            print("2. Click 'Create New Token' under API section")
-            print("3. Save kaggle.json to ~/.kaggle/kaggle.json")
-            print("4. Run: chmod 600 ~/.kaggle/kaggle.json")
-            return False
-        
-        output_dir = self.base_dir / "food11"
+        info = self.DATASETS[dataset_key]
+        output_dir = self.base_dir / info['output_dir']
         output_dir.mkdir(parents=True, exist_ok=True)
         
-        print(f"Downloading Food-11 dataset to {output_dir}...")
+        print(f"\n{'='*60}")
+        print(f"Downloading: {info['name']}")
+        print(f"{'='*60}")
+        print(f"Kaggle ID: {info['kaggle_id']}")
+        print(f"Size: {info['size']}")
+        print(f"Output: {output_dir}")
+        print()
         
         try:
+            import kaggle
+            
+            # 다운로드
+            print("Downloading...")
             kaggle.api.dataset_download_files(
-                self.DATASETS['food11']['kaggle_dataset'],
+                info['kaggle_id'],
                 path=str(output_dir),
                 unzip=True
             )
-            print("Download complete!")
+            
+            print(f"✓ 다운로드 완료: {output_dir}")
             return True
+            
         except Exception as e:
-            print(f"Error downloading dataset: {e}")
+            print(f"✗ 다운로드 실패: {e}")
+            print(f"\n수동 다운로드:")
+            print(f"  1. {info['url']} 접속")
+            print(f"  2. 'Download' 버튼 클릭")
+            print(f"  3. {output_dir}에 압축 해제")
             return False
     
+    def download_all(self):
+        """모든 Kaggle 데이터셋 다운로드."""
+        if not self.check_kaggle_api():
+            return
+        
+        print("\n" + "="*60)
+        print("모든 Kaggle 데이터셋 다운로드")
+        print("="*60)
+        
+        results = {}
+        for key in self.DATASETS:
+            results[key] = self.download_dataset(key)
+        
+        # 결과 요약
+        print("\n" + "="*60)
+        print("다운로드 결과")
+        print("="*60)
+        for key, success in results.items():
+            status = "✓ 성공" if success else "✗ 실패"
+            print(f"  {self.DATASETS[key]['name']}: {status}")
+    
     def verify_datasets(self):
-        """Verify that datasets are properly set up."""
-        print("Verifying dataset structure...\n")
+        """데이터셋 검증."""
+        print("\nVerifying datasets...\n")
         
         results = {}
         
-        # Check Food-11
-        food11_path = self.base_dir / "food11"
-        food11_images = list(food11_path.rglob("*.jpg")) + list(food11_path.rglob("*.png"))
-        results['food11'] = {
-            'exists': food11_path.exists(),
-            'images': len(food11_images),
-            'expected': 16643
-        }
+        for key, info in self.DATASETS.items():
+            dataset_dir = self.base_dir / info['output_dir']
+            
+            if dataset_dir.exists():
+                # 이미지 파일 수 계산
+                images = list(dataset_dir.rglob("*.jpg")) + \
+                         list(dataset_dir.rglob("*.jpeg")) + \
+                         list(dataset_dir.rglob("*.png"))
+                labels = list(dataset_dir.rglob("*.txt")) + \
+                         list(dataset_dir.rglob("*.xml")) + \
+                         list(dataset_dir.rglob("*.json"))
+                
+                results[key] = {
+                    'exists': True,
+                    'images': len(images),
+                    'labels': len(labels)
+                }
+            else:
+                results[key] = {
+                    'exists': False,
+                    'images': 0,
+                    'labels': 0
+                }
         
-        # Check Korean Food
-        korean_food_path = self.base_dir / "korean_food"
-        korean_images = list(korean_food_path.rglob("*.jpg")) + list(korean_food_path.rglob("*.png"))
-        korean_labels = list(korean_food_path.rglob("*.txt"))
-        results['korean_food'] = {
-            'exists': korean_food_path.exists(),
-            'images': len(korean_images),
-            'labels': len(korean_labels),
-            'expected': 272783
-        }
-        
-        # Check EasyOCR data
-        easyocr_path = self.base_dir / "easyocr"
-        ocr_images = list(easyocr_path.rglob("*.jpg")) + list(easyocr_path.rglob("*.png"))
-        results['easyocr'] = {
-            'exists': easyocr_path.exists(),
-            'images': len(ocr_images),
-            'expected': 51800
-        }
-        
-        # Print results
+        # 결과 출력
         print("Dataset Verification Results:")
         print("=" * 60)
         
-        for name, info in results.items():
-            status = "✓" if info['images'] >= info.get('expected', 0) * 0.8 else "✗"
-            print(f"\n{name}:")
+        for key, info in results.items():
+            dataset_info = self.DATASETS[key]
+            status = "✓" if info['exists'] and info['images'] > 0 else "✗"
+            
+            print(f"\n{dataset_info['name']}:")
             print(f"  Directory exists: {'Yes' if info['exists'] else 'No'}")
             print(f"  Images found: {info['images']:,}")
-            print(f"  Expected: ~{info.get('expected', 'N/A'):,}")
-            if 'labels' in info:
-                print(f"  Labels found: {info['labels']:,}")
+            print(f"  Labels found: {info['labels']:,}")
             print(f"  Status: {status}")
         
         return results
     
-    def print_download_instructions(self):
-        """Print detailed download instructions for all datasets."""
-        print("\n" + "=" * 70)
-        print("DATASET DOWNLOAD INSTRUCTIONS")
-        print("=" * 70)
+    def print_roboflow_instructions(self):
+        """Roboflow 데이터셋 다운로드 안내."""
+        print("\n" + "="*60)
+        print("추가 데이터셋 (Roboflow - 수동 다운로드)")
+        print("="*60)
         
-        for key, info in self.DATASETS.items():
-            print(f"\n{'─' * 50}")
-            print(f"📦 {info['name']}")
-            print(f"{'─' * 50}")
-            print(f"Source: {info['source']}")
-            print(f"URL: {info['url']}")
-            print(f"Size: {info['size']}")
-            print(f"Purpose: {info['purpose']}")
-            
-            if info['source'] == 'Kaggle':
-                print("\nDownload Options:")
-                print("  Option 1 (Manual):")
-                print("    1. Visit the URL above")
-                print("    2. Click 'Download' button")
-                print("    3. Extract to datasets/food11/")
-                print("  Option 2 (Kaggle API):")
-                print("    kaggle datasets download -d trolukovich/food11-image-dataset")
-            elif info['source'] == 'AI Hub':
-                print("\nDownload Instructions:")
-                print("  1. Register at https://www.aihub.or.kr (Korean ID required)")
-                print("  2. Navigate to the dataset page")
-                print("  3. Request access (may require approval)")
-                print("  4. Download and extract to appropriate directory")
+        for key, info in self.ROBOFLOW_DATASETS.items():
+            print(f"\n📦 {info['name']}")
+            print(f"   URL: {info['url']}")
+            print(f"   Size: {info['size']}")
+            print(f"   Purpose: {info['purpose']}")
+        
+        print("\n" + "-"*60)
+        print("Roboflow 다운로드 방법:")
+        print("1. 위 URL 접속")
+        print("2. 'Download Dataset' 클릭")
+        print("3. 'YOLO v8' 또는 'YOLOv5 PyTorch' 형식 선택")
+        print("4. datasets/korean_food_extra/ 디렉토리에 압축 해제")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Dataset Download and Setup Helper"
+        description="Kaggle 데이터셋 다운로드 및 설정"
     )
     
     parser.add_argument(
         "--setup-structure",
         action="store_true",
-        help="Create directory structure for datasets"
+        help="데이터셋 디렉토리 구조 생성"
+    )
+    parser.add_argument(
+        "--download-all",
+        action="store_true",
+        help="모든 Kaggle 데이터셋 다운로드"
     )
     parser.add_argument(
         "--download-food11",
         action="store_true",
-        help="Download Food-11 dataset from Kaggle"
+        help="Food-11 데이터셋 다운로드"
+    )
+    parser.add_argument(
+        "--download-korean-food",
+        action="store_true",
+        help="Korean Food Object Detection 데이터셋 다운로드"
+    )
+    parser.add_argument(
+        "--download-nutrition-ocr",
+        action="store_true",
+        help="Nutritional Facts OCR 데이터셋 다운로드"
     )
     parser.add_argument(
         "--verify",
         action="store_true",
-        help="Verify dataset setup"
+        help="데이터셋 검증"
     )
     parser.add_argument(
-        "--instructions",
+        "--show-roboflow",
         action="store_true",
-        help="Print download instructions"
+        help="Roboflow 추가 데이터셋 안내"
+    )
+    parser.add_argument(
+        "--download-korean-ocr",
+        action="store_true",
+        help="Handwriting OCR Data (Japanese/Korean) 데이터셋 다운로드"
     )
     parser.add_argument(
         "--base-dir",
         type=str,
         default="./datasets",
-        help="Base directory for datasets"
+        help="데이터셋 기본 디렉토리"
     )
     
     args = parser.parse_args()
     
-    setup = DatasetSetup(args.base_dir)
+    downloader = KaggleDatasetDownloader(args.base_dir)
     
     if args.setup_structure:
-        setup.setup_directory_structure()
+        downloader.setup_directory_structure()
+    elif args.download_all:
+        downloader.download_all()
     elif args.download_food11:
-        setup.download_food11_kaggle()
+        if downloader.check_kaggle_api():
+            downloader.download_dataset('food11')
+    elif args.download_korean_food:
+        if downloader.check_kaggle_api():
+            downloader.download_dataset('korean_food')
+    elif args.download_nutrition_ocr:
+        if downloader.check_kaggle_api():
+            downloader.download_dataset('nutrition_ocr')
+    elif args.download_korean_ocr:
+        if downloader.check_kaggle_api():
+            downloader.download_dataset('korean_ocr')
     elif args.verify:
-        setup.verify_datasets()
-    elif args.instructions:
-        setup.print_download_instructions()
+        downloader.verify_datasets()
+    elif args.show_roboflow:
+        downloader.print_roboflow_instructions()
     else:
-        # Default: show instructions
-        setup.print_download_instructions()
-        print("\n" + "=" * 70)
-        print("To set up directory structure, run:")
-        print("  python download_datasets.py --setup-structure")
+        # 기본: 안내 출력
+        print("="*60)
+        print("Kaggle 데이터셋 다운로드 도우미")
+        print("="*60)
+        
+        print("\n📦 사용 가능한 데이터셋:")
+        for key, info in downloader.DATASETS.items():
+            print(f"\n  {info['name']}")
+            print(f"    Kaggle: {info['kaggle_id']}")
+            print(f"    Size: {info['size']}")
+        
+        print("\n" + "-"*60)
+        print("사용 방법:")
+        print("  1. 디렉토리 구조 설정:")
+        print("     python download_datasets.py --setup-structure")
+        print("\n  2. 모든 데이터셋 다운로드:")
+        print("     python download_datasets.py --download-all")
+        print("\n  3. 데이터셋 검증:")
+        print("     python download_datasets.py --verify")
+        print("\n  4. Roboflow 추가 데이터셋 안내:")
+        print("     python download_datasets.py --show-roboflow")
 
 
 if __name__ == "__main__":
