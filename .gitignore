@@ -1,0 +1,89 @@
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Kotlin ###
+.kotlin
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Flutter ###
+# Build outputs
+build/
+*.apk
+*.aab
+*.ipa
+
+# Coverage
+coverage/
+
+# Misc
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+pubspec.lock
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# ML model artifacts
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.pkl
+*.pickle
+
+# Training artifacts (can be large)
+runs/
+outputs/
+checkpoints/
+wandb/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Sample data (generated)
+sample_ratings.csv
+sample_food_database.csv
+easyocr_training_data/
+
+# ML Training Datasets (large files - download separately)
+ml_training/datasets/
+datasets/
