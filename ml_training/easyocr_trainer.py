@@ -618,6 +618,7 @@ def setup_easyocr_training(output_dir: str = "./easyocr_training"):
     """
     import subprocess
     import sys
+    import yaml
     
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -664,7 +665,6 @@ def setup_easyocr_training(output_dir: str = "./easyocr_training"):
     config = create_training_config(output_path)
     config_file = output_path / "train_config.yaml"
     with open(config_file, 'w', encoding='utf-8') as f:
-        import yaml
         yaml.dump(config, f, allow_unicode=True)
     print(f"✓ Configuration saved to {config_file}")
     
@@ -707,9 +707,27 @@ For detailed instructions, see:
 
 
 def create_korean_nutrition_charset():
-    """Create character set for Korean nutrition labels."""
-    # Korean characters (Hangul syllables commonly used in nutrition labels)
-    hangul = ''.join([chr(i) for i in range(0xAC00, 0xD7A4)])  # All Hangul
+    """Create character set for Korean nutrition labels.
+    
+    Uses a focused subset of commonly used Korean syllables in nutrition
+    terminology rather than all 11,172 Hangul syllables for better efficiency.
+    """
+    # Common Korean syllables in nutrition labels (optimized subset)
+    # Instead of all Hangul, we use frequently occurring syllables
+    common_syllables = (
+        '가각간갈감갑강개객갱거건걸검겁게격겸경계고곡곤골공과관광교구국군굴권'
+        '귤그극근글금급기김깨꿀나낙날남납낮내냉너널넓네녀노녹논놀농뇌누눈뉴'
+        '느늘능니닭단달담답당대댓더덕던덜덤덥데도독돈돌동되두둔둘뒤드득든들'
+        '디딸따땅떡뜨라락란람랍랑래랭량러렁런럼레려력련열염렬로록론롤류륨리'
+        '린림립마막만말망매맥맨머먹면멸명몇모목몰무묵문물미민밀및바박반발밤방'
+        '배백버번벌범법벼변볶볼부북분불비빈빵사산살삼삽상새색생서석선설섬섭세'
+        '소속손솔송수숙순술숭슈스스슬식신싱쌀아안알암압앙야약양어언얼업에엔여'
+        '역연열엽영예오온올옥와완왕요용우욱운울웅원월위유육율으은을음읍응의이'
+        '인일임입자작잔잠장재전절점정제조족존졸종좋주죽준줄중즙지직진질짜찌차'
+        '참창채천철첨청체초총최추출충치칠칼캔커컵코콜크킬타탄탕태터토통트특파'
+        '팥팬퍼편평포표푸품프피하학한할함합항해핵햄향허험헛현혈협호혹화환활황'
+        '회획흑흰흥히'
+    )
     
     # Numbers and basic punctuation
     numbers = '0123456789'
@@ -724,7 +742,7 @@ def create_korean_nutrition_charset():
     # Spaces and common whitespace
     whitespace = ' \t\n'
     
-    return hangul + numbers + punctuation + english + special + whitespace
+    return common_syllables + numbers + punctuation + english + special + whitespace
 
 
 def create_training_config(output_path):
@@ -818,20 +836,20 @@ This directory contains all files needed to train EasyOCR for Korean nutrition l
 ## Directory Structure
 
 ```
-{output_path}/
-├── EasyOCR/                    # Cloned EasyOCR repository
-│   └── trainer/                # Training scripts
-├── training_data/              # Your training data
-│   ├── train/                  # Training images and labels
-│   │   ├── labels.txt         # Format: image.jpg<TAB>text
-│   │   └── *.jpg              # Training images
-│   ├── val/                    # Validation images and labels
-│   └── korean_generated/       # Generated Korean text samples
-├── saved_models/               # Output trained models
+easyocr_training/                  # Training root directory
+├── EasyOCR/                       # Cloned EasyOCR repository
+│   └── trainer/                   # Training scripts
+├── training_data/                 # Your training data
+│   ├── train/                     # Training images and labels
+│   │   ├── labels.txt            # Format: image.jpg<TAB>text
+│   │   └── *.jpg                 # Training images
+│   ├── val/                       # Validation images and labels
+│   └── korean_generated/          # Generated Korean text samples
+├── saved_models/                  # Output trained models
 ├── korean_nutrition_charset.txt  # Character set for training
-├── train_config.yaml           # Training configuration
-├── train.sh                    # Training script
-└── TRAINING_README.md          # This file
+├── train_config.yaml              # Training configuration
+├── train.sh                       # Training script
+└── TRAINING_README.md             # This file
 ```
 
 ## Training Pipeline (3-Stage Approach)
