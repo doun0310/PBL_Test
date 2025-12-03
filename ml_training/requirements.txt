@@ -34,6 +34,11 @@ tqdm>=4.65.0
 PyYAML>=6.0
 
 # ====================
+# Dataset Download Tools
+# ====================
+kaggle>=1.5.0  # Kaggle API for dataset downloads
+
+# ====================
 # Optional: For Jupyter Notebooks
 # ====================
 jupyter>=1.0.0
