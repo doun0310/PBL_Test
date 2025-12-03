@@ -57,7 +57,6 @@ try:
     import easyocr
 except ImportError:
     easyocr = None
-    print("Warning: easyocr not installed. Install with: pip install easyocr")
 
 try:
     import cv2
@@ -67,7 +66,6 @@ except ImportError:
     cv2 = None
     np = None
     Image = None
-    print("Warning: OpenCV/NumPy/Pillow not installed.")
 
 
 @dataclass
@@ -181,6 +179,12 @@ class EasyOCRNutritionExtractor:
     
     def load_reader(self):
         """Load the EasyOCR reader with specified configuration."""
+        if easyocr is None:
+            raise ImportError(
+                "easyocr is not installed. Install it with: pip install -r requirements.txt\n"
+                "Or install directly: pip install easyocr"
+            )
+        
         print(f"Loading EasyOCR reader for languages: {self.languages}")
         
         kwargs = {
