@@ -608,6 +608,395 @@ For detailed instructions, refer to:
         print(f"Sample structure created at: {self.output_dir}")
 
 
+def setup_easyocr_training(output_dir: str = "./easyocr_training"):
+    """
+    Setup EasyOCR training environment by cloning the trainer repository
+    and creating necessary configuration files.
+    
+    Args:
+        output_dir: Directory to setup training environment
+    """
+    import subprocess
+    import sys
+    
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    
+    print("="*70)
+    print("EasyOCR Training Environment Setup")
+    print("="*70)
+    
+    # Clone EasyOCR repository
+    easyocr_repo = output_path / "EasyOCR"
+    if not easyocr_repo.exists():
+        print("\n[1/5] Cloning EasyOCR repository...")
+        try:
+            subprocess.run([
+                "git", "clone",
+                "https://github.com/JaidedAI/EasyOCR.git",
+                str(easyocr_repo)
+            ], check=True)
+            print("✓ Repository cloned successfully")
+        except subprocess.CalledProcessError:
+            print("✗ Failed to clone repository. Please clone manually:")
+            print("  git clone https://github.com/JaidedAI/EasyOCR.git")
+            return
+    else:
+        print("\n[1/5] EasyOCR repository already exists")
+    
+    # Create training data directory structure
+    print("\n[2/5] Creating training data directories...")
+    train_data_dir = output_path / "training_data"
+    for subdir in ["train", "val", "korean_generated"]:
+        (train_data_dir / subdir).mkdir(parents=True, exist_ok=True)
+    print(f"✓ Created directories in {train_data_dir}")
+    
+    # Create sample character list for Korean nutrition labels
+    print("\n[3/5] Creating character set file...")
+    char_list = create_korean_nutrition_charset()
+    charset_file = output_path / "korean_nutrition_charset.txt"
+    with open(charset_file, 'w', encoding='utf-8') as f:
+        f.write(''.join(sorted(set(char_list))))
+    print(f"✓ Character set saved to {charset_file}")
+    
+    # Create training configuration file
+    print("\n[4/5] Creating training configuration...")
+    config = create_training_config(output_path)
+    config_file = output_path / "train_config.yaml"
+    with open(config_file, 'w', encoding='utf-8') as f:
+        import yaml
+        yaml.dump(config, f, allow_unicode=True)
+    print(f"✓ Configuration saved to {config_file}")
+    
+    # Create training script
+    print("\n[5/5] Creating training helper script...")
+    create_training_script(output_path)
+    print(f"✓ Training script created: {output_path}/train.sh")
+    
+    # Print next steps
+    print("\n" + "="*70)
+    print("Setup Complete! Next Steps:")
+    print("="*70)
+    print(f"""
+1. Generate Korean training data:
+   python easyocr_trainer.py --generate-korean-data 1000 --output-dir {train_data_dir}
+
+2. Download and prepare your datasets:
+   - Nutritional Facts dataset from Kaggle
+   - Korean OCR dataset
+   - Custom nutrition label images (800 samples)
+
+3. Prepare training data from your images:
+   python easyocr_trainer.py --prepare-data <images_dir> <annotations.json> --output-dir {train_data_dir}
+
+4. Install EasyOCR trainer dependencies:
+   cd {easyocr_repo}/trainer
+   pip install -r requirements.txt
+
+5. Configure and start training:
+   cd {output_path}
+   bash train.sh
+   
+For detailed instructions, see:
+   {output_path}/TRAINING_README.md
+""")
+    
+    # Create detailed README
+    create_training_readme(output_path)
+    print(f"✓ Detailed guide saved to {output_path}/TRAINING_README.md")
+
+
+def create_korean_nutrition_charset():
+    """Create character set for Korean nutrition labels."""
+    # Korean characters (Hangul syllables commonly used in nutrition labels)
+    hangul = ''.join([chr(i) for i in range(0xAC00, 0xD7A4)])  # All Hangul
+    
+    # Numbers and basic punctuation
+    numbers = '0123456789'
+    punctuation = '.,()[]{}:;-%+/\'"'
+    
+    # Common English letters for nutrition terms
+    english = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    
+    # Special nutrition symbols
+    special = 'kcal㎉㎎㎍μg%'
+    
+    # Spaces and common whitespace
+    whitespace = ' \t\n'
+    
+    return hangul + numbers + punctuation + english + special + whitespace
+
+
+def create_training_config(output_path):
+    """Create training configuration for EasyOCR."""
+    return {
+        'experiment_name': 'korean_nutrition_label_ocr',
+        'train_data': str(output_path / 'training_data' / 'train'),
+        'valid_data': str(output_path / 'training_data' / 'val'),
+        'character': str(output_path / 'korean_nutrition_charset.txt'),
+        'num_iter': 3155,  # As per actual training (3155 epochs)
+        'batch_size': 192,
+        'saved_model': str(output_path / 'saved_models'),
+        'language': 'ko',
+        'imgH': 32,
+        'imgW': 100,
+        'rgb': True,
+        'workers': 4,
+        'lr': 1.0,
+        'beta1': 0.9,
+        'rho': 0.95,
+        'eps': 1e-8,
+        'grad_clip': 5,
+        'valInterval': 100,
+        'num_gpu': 1,
+    }
+
+
+def create_training_script(output_path):
+    """Create a bash script to run training."""
+    script_content = f"""#!/bin/bash
+# EasyOCR Training Script for Korean Nutrition Labels
+
+EASYOCR_DIR="{output_path}/EasyOCR"
+CONFIG_FILE="{output_path}/train_config.yaml"
+TRAIN_DATA="{output_path}/training_data/train"
+VAL_DATA="{output_path}/training_data/val"
+CHARSET="{output_path}/korean_nutrition_charset.txt"
+OUTPUT_DIR="{output_path}/saved_models"
+
+echo "Starting EasyOCR Training for Korean Nutrition Labels"
+echo "========================================================"
+echo "Train data: $TRAIN_DATA"
+echo "Val data: $VAL_DATA"
+echo "Character set: $CHARSET"
+echo "Output: $OUTPUT_DIR"
+echo "========================================================"
+
+# Navigate to EasyOCR trainer directory
+cd "$EASYOCR_DIR/trainer" || exit 1
+
+# Run training
+python train.py \\
+    --train_data "$TRAIN_DATA" \\
+    --valid_data "$VAL_DATA" \\
+    --select_data "/" \\
+    --batch_ratio "1" \\
+    --character "$CHARSET" \\
+    --saved_model "$OUTPUT_DIR" \\
+    --Transformation TPS \\
+    --FeatureExtraction ResNet \\
+    --SequenceModeling BiLSTM \\
+    --Prediction Attn \\
+    --num_iter 3155 \\
+    --batch_size 192 \\
+    --lr 1.0 \\
+    --valInterval 100 \\
+    --workers 4 \\
+    --manualSeed 1111 \\
+    --imgH 32 \\
+    --imgW 100 \\
+    --rgb
+
+echo "Training complete! Model saved to: $OUTPUT_DIR"
+"""
+    
+    script_file = output_path / "train.sh"
+    with open(script_file, 'w') as f:
+        f.write(script_content)
+    
+    # Make executable
+    import stat
+    script_file.chmod(script_file.stat().st_mode | stat.S_IEXEC)
+
+
+def create_training_readme(output_path):
+    """Create detailed training README."""
+    readme_content = f"""# EasyOCR Training Guide for Korean Nutrition Labels
+
+This directory contains all files needed to train EasyOCR for Korean nutrition label recognition.
+
+## Directory Structure
+
+```
+{output_path}/
+├── EasyOCR/                    # Cloned EasyOCR repository
+│   └── trainer/                # Training scripts
+├── training_data/              # Your training data
+│   ├── train/                  # Training images and labels
+│   │   ├── labels.txt         # Format: image.jpg<TAB>text
+│   │   └── *.jpg              # Training images
+│   ├── val/                    # Validation images and labels
+│   └── korean_generated/       # Generated Korean text samples
+├── saved_models/               # Output trained models
+├── korean_nutrition_charset.txt  # Character set for training
+├── train_config.yaml           # Training configuration
+├── train.sh                    # Training script
+└── TRAINING_README.md          # This file
+```
+
+## Training Pipeline (3-Stage Approach)
+
+### Stage 1: Korean Character Recognition (1,000 samples)
+Generate synthetic Korean text for basic character recognition:
+
+```bash
+cd {Path(__file__).parent}
+python easyocr_trainer.py --generate-korean-data 1000 --output-dir {output_path}/training_data
+```
+
+This creates synthetic images of Korean nutrition terms using TextRecognitionDataGenerator.
+
+### Stage 2: Product Label OCR (50,000 samples)
+Download and prepare the Kaggle nutrition facts dataset:
+
+```bash
+# Download dataset
+kaggle datasets download -d shensivam/nutritional-facts-from-food-label
+unzip nutritional-facts-from-food-label.zip -d datasets/nutrition_facts
+
+# Prepare for training (requires annotation file)
+python easyocr_trainer.py --prepare-data datasets/nutrition_facts annotations.json \\
+    --output-dir {output_path}/training_data
+```
+
+### Stage 3: Nutrition Label Fine-tuning (800 samples)
+Add your custom nutrition label images:
+
+1. Capture 800 nutrition label images
+2. Annotate them (create annotations.json with bounding boxes and text)
+3. Prepare the data:
+
+```bash
+python easyocr_trainer.py --prepare-data custom_images/ annotations.json \\
+    --output-dir {output_path}/training_data
+```
+
+## Data Format
+
+### labels.txt Format
+```
+image_001.jpg	열량 250kcal
+image_002.jpg	탄수화물 30g
+image_003.jpg	단백질 15g 지방 8g
+```
+
+### Annotations JSON Format
+```json
+{{
+  "image_001.jpg": [
+    {{"bbox": [10, 20, 100, 40], "text": "열량 250kcal"}},
+    {{"bbox": [10, 45, 100, 65], "text": "탄수화물 30g"}}
+  ]
+}}
+```
+
+## Training Configuration
+
+The training uses these parameters (as per actual project training):
+- **Epochs**: 3,155 iterations
+- **Batch Size**: 192
+- **Train/Val Split**: 80:20
+- **Image Size**: 32x100 pixels
+- **Architecture**: TPS-ResNet-BiLSTM-Attn
+
+## Running Training
+
+### Option 1: Using the training script (Recommended)
+```bash
+cd {output_path}
+bash train.sh
+```
+
+### Option 2: Manual training
+```bash
+cd {output_path}/EasyOCR/trainer
+
+python train.py \\
+    --train_data {output_path}/training_data/train \\
+    --valid_data {output_path}/training_data/val \\
+    --character {output_path}/korean_nutrition_charset.txt \\
+    --saved_model {output_path}/saved_models \\
+    --num_iter 3155 \\
+    --batch_size 192
+```
+
+## Monitoring Training
+
+Training progress will be displayed in the console. Validation is performed every 100 iterations.
+
+Key metrics to watch:
+- Training loss (should decrease)
+- Validation accuracy (should increase)
+- Character error rate (should decrease)
+
+## Using the Trained Model
+
+After training, use your custom model for inference:
+
+```python
+import easyocr
+
+reader = easyocr.Reader(
+    ['ko', 'en'],
+    gpu=True,
+    model_storage_directory='{output_path}/saved_models',
+    user_network_directory='{output_path}/saved_models',
+    recog_network='custom'
+)
+
+result = reader.readtext('nutrition_label.jpg')
+```
+
+Or using the trainer script:
+
+```bash
+python easyocr_trainer.py --infer nutrition_label.jpg
+```
+
+## Post-Processing
+
+The trainer includes OCR error correction for common misrecognitions:
+- '브랜스' → '트랜스'
+- '탄백질' → '단백질'
+- '탄수하물' → '탄수화물'
+- And more...
+
+These corrections are automatically applied during inference.
+
+## Troubleshooting
+
+### Out of Memory Error
+- Reduce `batch_size` in train_config.yaml or train.sh
+- Reduce image dimensions (`imgH`, `imgW`)
+
+### Low Accuracy
+- Increase training data (especially for rare characters)
+- Increase `num_iter` (epochs)
+- Adjust learning rate (`lr`)
+
+### Training Too Slow
+- Use GPU (`--num_gpu 1`)
+- Reduce `workers` if CPU is bottleneck
+- Use smaller validation set
+
+## References
+
+- EasyOCR Repository: https://github.com/JaidedAI/EasyOCR
+- EasyOCR Training Guide: https://github.com/JaidedAI/EasyOCR/blob/master/trainer/README.md
+- CRAFT Text Detection: https://github.com/clovaai/CRAFT-pytorch
+
+## Support
+
+For issues with:
+- **EasyOCR training**: Check EasyOCR GitHub issues
+- **Data preparation**: Use `python easyocr_trainer.py --help`
+- **Custom requirements**: Modify train_config.yaml or train.sh
+"""
+    
+    with open(output_path / "TRAINING_README.md", 'w', encoding='utf-8') as f:
+        f.write(readme_content)
+
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -631,6 +1020,17 @@ def main():
         action="store_true",
         help="Create sample directory structure"
     )
+    parser.add_argument(
+        "--generate-korean-data",
+        type=int,
+        metavar="NUM_SAMPLES",
+        help="Generate Korean text training data (e.g., 1000)"
+    )
+    parser.add_argument(
+        "--setup-training",
+        action="store_true",
+        help="Setup EasyOCR training environment and download trainer"
+    )
     
     # Configuration arguments
     parser.add_argument(
@@ -652,6 +1052,17 @@ def main():
     )
     
     args = parser.parse_args()
+    
+    # Setup training environment
+    if args.setup_training:
+        setup_easyocr_training(args.output_dir)
+        return
+    
+    # Generate Korean training data
+    if args.generate_korean_data:
+        preparer = EasyOCRDataPreparer(args.output_dir)
+        preparer.generate_korean_training_data(num_samples=args.generate_korean_data)
+        return
     
     # Create sample structure
     if args.create_sample:

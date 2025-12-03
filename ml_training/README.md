@@ -54,42 +54,48 @@ unzip koreanfood-objectdetection-dataset.zip -d datasets/korean_food/
 
 ### 2. EasyOCR - Nutrition Label Recognition
 
-#### Option A: Nutritional Facts from Food Label (Kaggle) ⭐
-- **Source**: https://www.kaggle.com/datasets/shensivam/nutritional-facts-from-food-label
-- **Size**: 영양 성분표 이미지 + 레이블
-- **Purpose**: Nutrition label OCR training
+**3-Stage Training Pipeline** (프로젝트에서 사용한 방법론):
 
-**Download Instructions:**
+#### Stage 1: Korean Character Recognition (1,000 samples)
+- **Tool**: TextRecognitionDataGenerator (trdg)
+- **Purpose**: Basic Hangul character recognition
+- **Generate with:**
+```bash
+python easyocr_trainer.py --generate-korean-data 1000 --output-dir ./easyocr_training/training_data
+```
+
+#### Stage 2: Product Label OCR (50,000 samples)
+- **Source**: https://www.kaggle.com/datasets/shensivam/nutritional-facts-from-food-label
+- **Purpose**: General product label text patterns
+- **Download:**
 ```bash
 kaggle datasets download -d shensivam/nutritional-facts-from-food-label
 unzip nutritional-facts-from-food-label.zip -d datasets/nutrition_ocr/
 ```
 
-#### Option B: Handwriting OCR Data (Japanese/Korean) (Kaggle) ⭐
+**Additional Korean OCR Dataset:**
 - **Source**: https://www.kaggle.com/datasets/nexdatafrank/handwriting-ocr-data-of-japanese-and-korean
-- **Size**: 일본어/한국어 손글씨 이미지
-- **Purpose**: Korean text recognition training
-
-**Download Instructions:**
+- **Purpose**: Korean handwriting recognition
 ```bash
 kaggle datasets download -d nexdatafrank/handwriting-ocr-data-of-japanese-and-korean
 unzip handwriting-ocr-data-of-japanese-and-korean.zip -d datasets/korean_ocr/
 ```
 
-#### Option C: Korean Text Generation (자체 생성)
-- **Tool**: TextRecognitionDataGenerator (trdg)
-- **Size**: 1,000+ samples (customizable)
-- **Purpose**: Korean character recognition for nutrition terms
-
-**Generate with:**
+#### Stage 3: Nutrition Label Fine-tuning (800 samples)
+- **Size**: 800+ manually labeled samples
+- **Purpose**: Specific Korean nutrition terms (탄수화물, 포화지방, 트랜스지방, etc.)
+- **Method**: Capture Korean product nutrition labels and annotate
+- **Prepare with:**
 ```bash
-python easyocr_trainer.py --generate-korean-data 1000
+python easyocr_trainer.py --prepare-data <images_dir> <annotations.json> --output-dir ./easyocr_training/training_data
 ```
 
-#### Option D: Custom Nutrition Labels (직접 수집)
-- **Size**: 800+ manually labeled samples
-- **Purpose**: Fine-tuning for nutrition-specific Korean terms (탄수화물, 포화지방, etc.)
-- **Note**: Capture and label nutrition labels from Korean products
+#### EasyOCR Training Configuration
+- **Train/Val Split**: 80:20
+- **Epochs**: 3,155 iterations
+- **OCR Error Correction**: Post-processing for common errors ('브랜스'→'트랜스', '탄백질'→'단백질')
+
+**Complete EasyOCR Training Guide**: See [`EASYOCR_TRAINING_GUIDE.md`](EASYOCR_TRAINING_GUIDE.md)
 
 ---
 
@@ -168,12 +174,25 @@ python yolo_training.py --data data.yaml --epochs 100 --batch 16
 
 **EasyOCR:**
 ```bash
-# Generate Korean training data
-python easyocr_trainer.py --generate-korean-data 1000
+# Step 1: Setup training environment
+python easyocr_trainer.py --setup-training --output-dir ./easyocr_training
 
-# Prepare training data from annotations
-python easyocr_trainer.py --prepare-data datasets/easyocr/images datasets/easyocr/annotations.json
+# Step 2: Generate Korean synthetic data (Stage 1)
+python easyocr_trainer.py --generate-korean-data 1000 --output-dir ./easyocr_training/training_data
+
+# Step 3: Download and prepare datasets (Stage 2 & 3)
+# Download Kaggle datasets first, then prepare
+python easyocr_trainer.py --prepare-data datasets/nutrition_ocr annotations.json --output-dir ./easyocr_training/training_data
+
+# Step 4: Start training (3155 epochs, 80:20 split)
+cd easyocr_training
+bash train.sh
+
+# OR: Run inference with trained model
+python easyocr_trainer.py --infer path/to/nutrition_label.jpg
 ```
+
+**For detailed EasyOCR training guide, see**: [`EASYOCR_TRAINING_GUIDE.md`](EASYOCR_TRAINING_GUIDE.md)
 
 **Collaborative Filtering:**
 ```bash

@@ -28,12 +28,13 @@ All ML training files have been thoroughly validated and are ready for error-fre
 | `data.yaml` | ✓ Valid YAML | 154 Korean food classes, proper structure |
 | `requirements.txt` | ✓ Complete | 19 packages including kaggle, arabic-reshaper, python-bidi |
 
-### Documentation Files (4 files)
+### Documentation Files (5 files)
 | File | Status | Purpose |
 |------|--------|---------|
 | `README.md` | ✓ Present | Dataset sources and download info |
 | `TRAINING_GUIDE.md` | ✓ Present | Step-by-step training instructions |
 | `QUICKSTART.md` | ✓ Present | Quick start guide (Korean) |
+| `EASYOCR_TRAINING_GUIDE.md` | ✓ Present | Complete EasyOCR training guide (Korean) |
 | `VALIDATION_REPORT.md` | ✓ Present | This file |
 
 ### Validation Tools (1 file)
@@ -190,8 +191,10 @@ python download_datasets.py --help
    # YOLO
    python yolo_training.py --data data.yaml --epochs 100 --batch 16
    
-   # EasyOCR (prepare data)
-   python easyocr_trainer.py --generate-korean-data 1000
+   # EasyOCR (setup training environment)
+   python easyocr_trainer.py --setup-training --output-dir ./easyocr_training
+   python easyocr_trainer.py --generate-korean-data 1000 --output-dir ./easyocr_training/training_data
+   cd easyocr_training && bash train.sh
    
    # Collaborative Filtering
    python collaborative_filtering.py --remaining-cal 500 --remaining-carb 50
@@ -211,9 +214,17 @@ python download_datasets.py --help
 
 ### EasyOCR
 - **Languages**: Korean (`ko`), English (`en`)
+- **Training Pipeline**: 3-stage approach
+  - Stage 1: 1,000 Korean character samples (TextRecognitionDataGenerator)
+  - Stage 2: 50,000 product label samples (Kaggle datasets)
+  - Stage 3: 800 custom nutrition label samples
 - **Data split**: 80% train, 20% validation
+- **Epochs**: 3,155 iterations
+- **Architecture**: TPS-ResNet-BiLSTM-Attn
 - **Error correction**: Regex patterns for common OCR errors
 - **Post-processing**: Korean nutrition term normalization
+- **Training Setup**: `python easyocr_trainer.py --setup-training`
+- **Complete Guide**: See `EASYOCR_TRAINING_GUIDE.md`
 
 ### Collaborative Filtering
 - **Method**: Cosine similarity (sklearn)
