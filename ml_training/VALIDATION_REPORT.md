@@ -26,7 +26,7 @@ All ML training files have been thoroughly validated and are ready for error-fre
 | File | Status | Details |
 |------|--------|---------|
 | `data.yaml` | ✓ Valid YAML | 154 Korean food classes, proper structure |
-| `requirements.txt` | ✓ Complete | 17 packages including kaggle |
+| `requirements.txt` | ✓ Complete | 19 packages including kaggle, arabic-reshaper, python-bidi |
 
 ### Documentation Files (4 files)
 | File | Status | Purpose |
@@ -84,7 +84,7 @@ All ML training files have been thoroughly validated and are ready for error-fre
 - ✓ `jupyter>=1.0.0` - Jupyter notebooks
 - ✓ `ipykernel>=6.25.0` - IPython kernel
 
-**Total**: 17 packages, all properly specified with version constraints
+**Total**: 19 packages, all properly specified with version constraints
 
 ---
 

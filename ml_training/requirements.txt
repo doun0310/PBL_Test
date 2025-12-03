@@ -11,6 +11,8 @@ ultralytics>=8.0.0  # YOLO v8 framework
 # ====================
 easyocr>=1.7.0
 trdg>=1.8.0  # TextRecognitionDataGenerator for Korean text generation
+arabic-reshaper>=2.1.0  # Required for EasyOCR text rendering
+python-bidi>=0.4.2  # Required for bidirectional text support in EasyOCR
 
 # ====================
 # Collaborative Filtering Dependencies (Primary: cosine similarity)
