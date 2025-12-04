@@ -405,6 +405,66 @@ names:
 #        └── labels/
 
 # ============================================================
+# OPTION 6: DongA University Food Recognition (Project-Optimized)
+# ============================================================
+# Uncomment below and comment out other options to use DongA Food Recognition
+#
+# Dataset: https://universe.roboflow.com/donga-university-1jxx6/food-recognition-pkbvt
+# Optimized specifically for this project's food recognition requirements
+#
+# path: ./datasets/donga_food_recognition
+# train: train/images
+# val: valid/images
+# test: test/images
+#
+# nc: 20  # Number of classes (adjust based on actual dataset)
+#
+# names:
+#   0: rice               # 밥 - Cooked rice
+#   1: soup               # 국 - Soup
+#   2: stew               # 찌개 - Stew
+#   3: kimchi             # 김치 - Kimchi
+#   4: namul              # 나물 - Seasoned vegetables
+#   5: meat               # 고기 - Meat dish
+#   6: fish               # 생선 - Fish
+#   7: egg                # 계란 - Egg
+#   8: tofu               # 두부 - Tofu
+#   9: pancake            # 전 - Korean pancake
+#   10: fried             # 튀김 - Fried food
+#   11: grilled           # 구이 - Grilled food
+#   12: steamed           # 찜 - Steamed food
+#   13: noodles           # 면 - Noodles
+#   14: rice_cake         # 떡 - Rice cake
+#   15: bread             # 빵 - Bread
+#   16: dessert           # 후식 - Dessert
+#   17: fruit             # 과일 - Fruit
+#   18: salad             # 샐러드 - Salad
+#   19: beverage          # 음료 - Beverage
+#
+# ⚠️ NOTE: Class count and names should be verified from the actual Roboflow dataset
+# The above is a template based on typical Korean meal components
+#
+# Download Instructions for DongA University Dataset:
+# 1. Visit: https://universe.roboflow.com/donga-university-1jxx6/food-recognition-pkbvt
+# 2. Create a Roboflow account if needed
+# 3. Download dataset in YOLO format (YOLOv8 recommended)
+# 4. Extract to: ./datasets/donga_food_recognition/
+# 5. Verify directory structure:
+#    datasets/donga_food_recognition/
+#    ├── train/
+#    │   ├── images/
+#    │   └── labels/
+#    ├── valid/
+#    │   ├── images/
+#    │   └── labels/
+#    └── test/ (if available)
+#        ├── images/
+#        └── labels/
+# 6. Update 'nc' and 'names' according to actual dataset classes
+# 7. Uncomment this configuration and comment out other options
+# 8. Run: python yolo_training.py --data data.yaml --epochs 100
+
+# ============================================================
 # Dataset structure for each option:
 # ============================================================
 
