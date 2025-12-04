@@ -40,37 +40,53 @@ class KaggleDatasetDownloader:
     
     # Kaggle 데이터셋 정보
     DATASETS = {
+        # YOLO v8 데이터셋
         'food11': {
             'name': 'Food-11 Image Dataset',
             'kaggle_id': 'trolukovich/food11-image-dataset',
             'url': 'https://www.kaggle.com/datasets/trolukovich/food11-image-dataset',
             'size': '16,643 images',
-            'purpose': 'Food vs non-food classification for YOLO',
-            'output_dir': 'food11'
+            'purpose': 'Food classification (11 categories)',
+            'output_dir': 'food11',
+            'category': 'yolo'
+        },
+        'food101': {
+            'name': 'Food-101 Dataset',
+            'kaggle_id': 'dansbecker/food-101',
+            'url': 'https://www.kaggle.com/datasets/dansbecker/food-101',
+            'size': '101,000 images (101 classes)',
+            'purpose': 'Large-scale food recognition for robust training',
+            'output_dir': 'food101',
+            'category': 'yolo'
         },
         'korean_food': {
             'name': 'Korean Food Object Detection',
             'kaggle_id': 'jiminkoo/koreanfood-objectdetection-dataset',
             'url': 'https://www.kaggle.com/datasets/jiminkoo/koreanfood-objectdetection-dataset',
             'size': '~3,000+ images',
-            'purpose': 'Korean food object detection (YOLO format)',
-            'output_dir': 'korean_food'
+            'purpose': 'Korean food detection with bounding boxes',
+            'output_dir': 'korean_food',
+            'category': 'yolo'
         },
+        
+        # EasyOCR 데이터셋
         'nutrition_ocr': {
             'name': 'Nutritional Facts from Food Label',
             'kaggle_id': 'shensivam/nutritional-facts-from-food-label',
             'url': 'https://www.kaggle.com/datasets/shensivam/nutritional-facts-from-food-label',
-            'size': 'Nutrition label images',
-            'purpose': 'OCR training for nutrition labels',
-            'output_dir': 'nutrition_ocr'
+            'size': '5,000+ label images',
+            'purpose': 'Nutrition label OCR training',
+            'output_dir': 'nutrition_ocr',
+            'category': 'ocr'
         },
         'korean_ocr': {
             'name': 'Handwriting OCR Data (Japanese/Korean)',
             'kaggle_id': 'nexdatafrank/handwriting-ocr-data-of-japanese-and-korean',
             'url': 'https://www.kaggle.com/datasets/nexdatafrank/handwriting-ocr-data-of-japanese-and-korean',
-            'size': 'Korean/Japanese handwriting images',
-            'purpose': 'Korean text recognition training',
-            'output_dir': 'korean_ocr'
+            'size': '10,000+ handwriting samples',
+            'purpose': 'Korean character recognition',
+            'output_dir': 'korean_ocr',
+            'category': 'ocr'
         }
     }
     
@@ -123,34 +139,69 @@ class KaggleDatasetDownloader:
     
     def setup_directory_structure(self):
         """데이터셋 디렉토리 구조 생성."""
-        print("Setting up dataset directory structure...")
+        print("Setting up optimized dataset directory structure...")
         
-        # YOLO 데이터셋 디렉토리
+        # YOLO 데이터셋 디렉토리 (최적화된 구조)
         yolo_dirs = [
+            # Food-11
             self.base_dir / "food11" / "training",
             self.base_dir / "food11" / "validation",
             self.base_dir / "food11" / "evaluation",
+            
+            # Food-101 (대규모 데이터셋)
+            self.base_dir / "food101" / "images" / "train",
+            self.base_dir / "food101" / "images" / "test",
+            self.base_dir / "food101" / "meta",
+            
+            # Korean Food
             self.base_dir / "korean_food" / "images" / "train",
             self.base_dir / "korean_food" / "images" / "val",
             self.base_dir / "korean_food" / "labels" / "train",
             self.base_dir / "korean_food" / "labels" / "val",
+            
+            # Combined/Balanced dataset
+            self.base_dir / "combined" / "images" / "train",
+            self.base_dir / "combined" / "images" / "val",
+            self.base_dir / "combined" / "labels" / "train",
+            self.base_dir / "combined" / "labels" / "val",
         ]
         
-        # EasyOCR 데이터셋 디렉토리
+        # EasyOCR 데이터셋 디렉토리 (확장된 구조)
         ocr_dirs = [
-            self.base_dir / "nutrition_ocr",
+            # Nutrition labels
+            self.base_dir / "nutrition_ocr" / "images",
+            self.base_dir / "nutrition_ocr" / "labels",
+            
+            # Korean OCR
+            self.base_dir / "korean_ocr" / "train",
+            self.base_dir / "korean_ocr" / "test",
+            
+            # EasyOCR training data
             self.base_dir / "easyocr" / "korean_generated",
+            self.base_dir / "easyocr" / "korean_augmented",
             self.base_dir / "easyocr" / "nutrition_labels" / "train",
             self.base_dir / "easyocr" / "nutrition_labels" / "val",
+            self.base_dir / "easyocr" / "combined" / "train",
+            self.base_dir / "easyocr" / "combined" / "val",
         ]
         
-        all_dirs = yolo_dirs + ocr_dirs
+        # Collaborative Filtering 데이터베이스 디렉토리
+        cf_dirs = [
+            self.base_dir / "nutrition_db",
+            self.base_dir / "nutrition_db" / "korean_foods",
+            self.base_dir / "nutrition_db" / "user_preferences",
+        ]
+        
+        all_dirs = yolo_dirs + ocr_dirs + cf_dirs
         
         for dir_path in all_dirs:
             dir_path.mkdir(parents=True, exist_ok=True)
-            print(f"  Created: {dir_path}")
+            print(f"  ✓ {dir_path}")
         
-        print("\n✓ 디렉토리 구조 생성 완료!")
+        print(f"\n✓ {len(all_dirs)}개 디렉토리 생성 완료!")
+        print("  - YOLO v8: Food-11, Food-101, Korean Food")
+        print("  - EasyOCR: Nutrition labels, Korean OCR")
+        print("  - Collaborative Filtering: Nutrition DB")
     
     def download_dataset(self, dataset_key: str) -> bool:
         """Kaggle 데이터셋 다운로드."""
@@ -327,9 +378,24 @@ def main():
         help="모든 Kaggle 데이터셋 다운로드"
     )
     parser.add_argument(
+        "--download-all-yolo",
+        action="store_true",
+        help="모든 YOLO 데이터셋 다운로드 (Food-11, Food-101, Korean Food)"
+    )
+    parser.add_argument(
+        "--download-all-ocr",
+        action="store_true",
+        help="모든 OCR 데이터셋 다운로드 (Nutrition OCR, Korean OCR)"
+    )
+    parser.add_argument(
         "--download-food11",
         action="store_true",
         help="Food-11 데이터셋 다운로드"
+    )
+    parser.add_argument(
+        "--download-food101",
+        action="store_true",
+        help="Food-101 데이터셋 다운로드 (101,000 images)"
     )
     parser.add_argument(
         "--download-korean-food",
@@ -342,19 +408,24 @@ def main():
         help="Nutritional Facts OCR 데이터셋 다운로드"
     )
     parser.add_argument(
+        "--download-korean-ocr",
+        action="store_true",
+        help="Handwriting OCR Data (Japanese/Korean) 데이터셋 다운로드"
+    )
+    parser.add_argument(
         "--verify",
         action="store_true",
         help="데이터셋 검증"
     )
     parser.add_argument(
+        "--stats",
+        action="store_true",
+        help="데이터셋 통계 정보 출력"
+    )
+    parser.add_argument(
         "--show-roboflow",
         action="store_true",
         help="Roboflow 추가 데이터셋 안내"
-    )
-    parser.add_argument(
-        "--download-korean-ocr",
-        action="store_true",
-        help="Handwriting OCR Data (Japanese/Korean) 데이터셋 다운로드"
     )
     parser.add_argument(
         "--base-dir",
@@ -371,9 +442,22 @@ def main():
         downloader.setup_directory_structure()
     elif args.download_all:
         downloader.download_all()
+    elif args.download_all_yolo:
+        print("\n모든 YOLO 데이터셋 다운로드 중...")
+        if downloader.check_kaggle_api():
+            for key in ['food11', 'food101', 'korean_food']:
+                downloader.download_dataset(key)
+    elif args.download_all_ocr:
+        print("\n모든 OCR 데이터셋 다운로드 중...")
+        if downloader.check_kaggle_api():
+            for key in ['nutrition_ocr', 'korean_ocr']:
+                downloader.download_dataset(key)
     elif args.download_food11:
         if downloader.check_kaggle_api():
             downloader.download_dataset('food11')
+    elif args.download_food101:
+        if downloader.check_kaggle_api():
+            downloader.download_dataset('food101')
     elif args.download_korean_food:
         if downloader.check_kaggle_api():
             downloader.download_dataset('korean_food')
@@ -390,14 +474,22 @@ def main():
     else:
         # 기본: 안내 출력
         print("="*60)
-        print("Kaggle 데이터셋 다운로드 도우미")
+        print("Kaggle 데이터셋 다운로드 도우미 (Performance Optimized)")
         print("="*60)
         
-        print("\n📦 사용 가능한 데이터셋:")
+        print("\n📦 YOLO v8 데이터셋:")
         for key, info in downloader.DATASETS.items():
-            print(f"\n  {info['name']}")
-            print(f"    Kaggle: {info['kaggle_id']}")
-            print(f"    Size: {info['size']}")
+            if info.get('category') == 'yolo':
+                print(f"\n  ✓ {info['name']}")
+                print(f"    ID: {info['kaggle_id']}")
+                print(f"    Size: {info['size']}")
+        
+        print("\n📝 EasyOCR 데이터셋:")
+        for key, info in downloader.DATASETS.items():
+            if info.get('category') == 'ocr':
+                print(f"\n  ✓ {info['name']}")
+                print(f"    ID: {info['kaggle_id']}")
+                print(f"    Size: {info['size']}")
         
         print("\n" + "-"*60)
         print("사용 방법:")
@@ -405,10 +497,14 @@ def main():
         print("     python download_datasets.py --setup-structure")
         print("\n  2. 모든 데이터셋 다운로드:")
         print("     python download_datasets.py --download-all")
-        print("\n  3. 데이터셋 검증:")
+        print("\n  3. YOLO 데이터셋만 다운로드:")
+        print("     python download_datasets.py --download-all-yolo")
+        print("\n  4. OCR 데이터셋만 다운로드:")
+        print("     python download_datasets.py --download-all-ocr")
+        print("\n  5. 개별 다운로드:")
+        print("     python download_datasets.py --download-food101")
+        print("\n  6. 데이터셋 검증:")
         print("     python download_datasets.py --verify")
-        print("\n  4. Roboflow 추가 데이터셋 안내:")
-        print("     python download_datasets.py --show-roboflow")
 
 
 if __name__ == "__main__":
