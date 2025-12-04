@@ -559,3 +559,52 @@ names:
 #    python yolo_training.py --data data.yaml --epochs 100
 # ============================================================
 
+
+# ============================================================
+# OPTION 7: Roboflow Food Detection Dataset (General Food Detection)
+# ============================================================
+# Dataset: https://universe.roboflow.com/food-detection-x3g5d/detector_train
+# Description: General-purpose food detection dataset from Roboflow
+# Usage: Download from Roboflow Universe in YOLO format
+#
+# Features:
+# - General food items detection
+# - Pre-annotated with bounding boxes
+# - YOLO format ready
+# - Suitable for general food detection tasks
+#
+# Download Instructions:
+# 1. Visit: https://universe.roboflow.com/food-detection-x3g5d/detector_train
+# 2. Export dataset in "YOLO v8" format
+# 3. Extract to ./datasets/roboflow_food_detection/
+# 4. Uncomment this section and comment out other options
+# 5. Adjust nc and names based on actual dataset
+#
+# Uncomment below to use:
+
+# path: ./datasets/roboflow_food_detection
+# train: train/images
+# val: valid/images
+# test: test/images  # If available
+
+# nc: 10  # Adjust based on actual dataset classes
+
+# names:
+#   0: Food
+#   1: Fruit
+#   2: Vegetable
+#   3: Meat
+#   4: Bread
+#   5: Dessert
+#   6: Beverage
+#   7: Snack
+#   8: Fast Food
+#   9: Prepared Meal
+#
+# Note: Update class count (nc) and class names based on the actual
+# dataset you download from Roboflow. The classes above are generic
+# placeholders that should be replaced with the actual class names
+# from the detector_train dataset.
+#
+# ============================================================
+
