@@ -1,229 +1,193 @@
-# YOLO v8 Dataset Configuration for Korean Food Detection
-# =========================================================
-# This configuration is designed for fine-tuning YOLO v8 on Korean food images.
+# YOLO v8 Dataset Configuration for Food Detection
+# ==================================================
+# This configuration supports multiple dataset options for YOLO training.
 #
-# Training Data Sources:
-# 1. Kaggle 'Food-11 image dataset' (16,643 images)
-#    - General food recognition training
+# Available Datasets (via download_datasets.py):
+# 1. Food-11 (16,643 images, 11 classes) - General food classification
+# 2. Food-101 (101,000 images, 101 classes) - Large-scale food recognition
+# 3. Korean Food (3,000+ images, Korean food specific)
 #
-# 2. AI Hub '건강관리를 위한 음식 이미지' (Health Management Food Images)
-#    - Original: 3,000,000 images with 3,500 classes
-#    - Reduced: 272,783 images with 154 classes (hardware constraints)
+# ⚠️ IMPORTANT: Choose ONE dataset configuration below by uncommenting it
 #
 # Modify the paths according to your dataset location.
 
-# Dataset paths (relative to this file or absolute paths)
-path: ./datasets/korean_food  # Root directory of the dataset
+# ============================================================
+# OPTION 1: Food-11 Dataset (Recommended for Quick Start)
+# ============================================================
+path: ./datasets/food11       # Root directory of the dataset
 train: images/train           # Training images (relative to 'path')
 val: images/val               # Validation images (relative to 'path')
 test: images/test             # Test images (optional, relative to 'path')
 
-# Number of classes (reduced from 3,500 to 154 for training efficiency)
-nc: 154
+# Number of classes for Food-11
+nc: 11
 
-# Class names - Korean food items (154 classes from AI Hub dataset)
-# Each class represents a specific Korean dish for accurate calorie tracking
+# Food-11 Class Names
 names:
-  # 밥/죽류 (Rice/Porridge)
-  0: white_rice                # 흰쌀밥
-  1: mixed_grain_rice          # 잡곡밥
-  2: fried_rice                # 볶음밥
-  3: bibimbap                  # 비빔밥
-  4: rice_porridge             # 죽
-  5: kimbap                    # 김밥
-  6: sushi                     # 초밥
-  
-  # 국/찌개류 (Soups/Stews)
-  7: kimchi_jjigae             # 김치찌개
-  8: doenjang_jjigae           # 된장찌개
-  9: sundubu_jjigae            # 순두부찌개
-  10: budae_jjigae             # 부대찌개
-  11: gamjatang                # 감자탕
-  12: seolleongtang            # 설렁탕
-  13: yukgaejang               # 육개장
-  14: samgyetang               # 삼계탕
-  15: galbitang                # 갈비탕
-  16: miyeokguk                # 미역국
-  17: kongnamulguk             # 콩나물국
-  18: tteokguk                 # 떡국
-  19: manduguk                 # 만두국
-  20: haemultang               # 해물탕
-  
-  # 면류 (Noodles)
-  21: ramyeon                  # 라면
-  22: jajangmyeon              # 자장면
-  23: jjamppong                # 짬뽕
-  24: naengmyeon               # 냉면
-  25: bibim_naengmyeon         # 비빔냉면
-  26: kalguksu                 # 칼국수
-  27: japchae                  # 잡채
-  28: udon                     # 우동
-  29: soba                     # 소바
-  30: pasta                    # 파스타
-  
-  # 고기류 (Meat Dishes)
-  31: bulgogi                  # 불고기
-  32: samgyeopsal              # 삼겹살
-  33: galbi                    # 갈비
-  34: galbi_jjim               # 갈비찜
-  35: dakgalbi                 # 닭갈비
-  36: jeyuk_bokkeum            # 제육볶음
-  37: bossam                   # 보쌈
-  38: jokbal                   # 족발
-  39: sundae                   # 순대
-  40: sundaeguk                # 순대국
-  41: fried_chicken            # 치킨
-  42: yangnyeom_chicken        # 양념치킨
-  43: dakbokkeumtang           # 닭볶음탕
-  44: jjimdak                  # 찜닭
-  45: dakgangjeong             # 닭강정
-  46: tonkatsu                 # 돈까스
-  47: tangsuyuk                # 탕수육
-  48: sweet_sour_pork          # 깐풍기
-  49: steak                    # 스테이크
-  50: hamburger                # 햄버거
-  
-  # 해산물류 (Seafood)
-  51: grilled_fish             # 생선구이
-  52: fish_jorim               # 생선조림
-  53: saengseon_jjim           # 생선찜
-  54: haemul_pajeon            # 해물파전
-  55: nakji_bokkeum            # 낙지볶음
-  56: ojingeo_bokkeum          # 오징어볶음
-  57: jjukkumi                 # 쭈꾸미
-  58: jogae_gui                # 조개구이
-  59: ganjang_gejang           # 간장게장
-  60: sashimi                  # 회
-  
-  # 두부/달걀류 (Tofu/Egg)
-  61: dubu_jorim               # 두부조림
-  62: dubu_buchim              # 두부부침
-  63: sundubu                  # 순두부
-  64: gyeran_jjim              # 계란찜
-  65: gyeran_mari              # 계란말이
-  66: gyeran_furai             # 계란후라이
-  
-  # 나물/채소류 (Vegetables/Namul)
-  67: kimchi                   # 김치
-  68: kkakdugi                 # 깍두기
-  69: kongnamul                # 콩나물
-  70: sigeumchi_namul          # 시금치나물
-  71: gosari_namul             # 고사리나물
-  72: doraji_namul             # 도라지나물
-  73: musaengchae              # 무생채
-  74: oi_sobagi                # 오이소박이
-  75: japchae_vegetables       # 잡채나물
-  76: salad                    # 샐러드
-  
-  # 전/부침류 (Jeon/Pancakes)
-  77: pajeon                   # 파전
-  78: kimchi_jeon              # 김치전
-  79: gamja_jeon               # 감자전
-  80: hobak_jeon               # 호박전
-  81: buchimgae                # 부침개
-  82: bindaetteok              # 빈대떡
-  
-  # 볶음류 (Stir-fried)
-  83: kimchi_bokkeum           # 김치볶음
-  84: myulchi_bokkeum          # 멸치볶음
-  85: eomuk_bokkeum            # 어묵볶음
-  86: tteokbokki               # 떡볶이
-  87: rabokki                  # 라볶이
-  88: cheese_tteokbokki        # 치즈떡볶이
-  
-  # 찜류 (Steamed Dishes)
-  89: andong_jjimdak           # 안동찜닭
-  90: agwi_jjim                # 아귀찜
-  91: gyeran_jjim_dish         # 계란찜요리
-  92: mandu                    # 만두
-  93: jjinmandu                # 찐만두
-  94: gunmandu                 # 군만두
-  
-  # 구이류 (Grilled)
-  95: samgyeopsal_gui          # 삼겹살구이
-  96: galbi_gui                # 갈비구이
-  97: dwaeji_galbi             # 돼지갈비
-  98: so_galbi                 # 소갈비
-  99: chicken_gui              # 닭구이
-  100: godeungeo_gui           # 고등어구이
-  101: jogi_gui                # 조기구이
-  102: ggongchi_gui            # 꽁치구이
-  
-  # 탕/전골류 (Hot Pot)
-  103: shabu_shabu             # 샤브샤브
-  104: jeongol                 # 전골
-  105: bulgogi_jeongol         # 불고기전골
-  106: haemul_jeongol          # 해물전골
-  107: gopchang_jeongol        # 곱창전골
-  
-  # 밑반찬류 (Side Dishes)
-  108: jangjorim               # 장조림
-  109: japchae_small           # 잡채(밑반찬)
-  110: oi_muchim               # 오이무침
-  111: musaengchae_banchan     # 무생채(밑반찬)
-  112: maesaengyi_muchim       # 매생이무침
-  113: gaji_namul              # 가지나물
-  114: kkaennip_jangajji       # 깻잎장아찌
-  115: mu_jangajji             # 무장아찌
-  
-  # 분식류 (Snacks/Street Food)
-  116: kimbap_roll             # 김밥(분식)
-  117: sundae_bokkeum          # 순대볶음
-  118: hotdog                  # 핫도그
-  119: corn_dog                # 콘도그
-  120: twigim                  # 튀김
-  121: odeng                   # 오뎅
-  122: mandu_fried             # 군만두(분식)
-  
-  # 빵/디저트류 (Bread/Dessert)
-  123: bread                   # 빵
-  124: toast                   # 토스트
-  125: cake                    # 케이크
-  126: patbingsu               # 팥빙수
-  127: hotteok                 # 호떡
-  128: bungeoppang             # 붕어빵
-  129: yakgwa                  # 약과
-  130: tteok                   # 떡
-  131: songpyeon               # 송편
-  
-  # 과일류 (Fruits)
-  132: apple                   # 사과
-  133: banana                  # 바나나
-  134: orange                  # 오렌지
-  135: grape                   # 포도
-  136: watermelon              # 수박
-  137: melon                   # 멜론
-  138: strawberry              # 딸기
-  139: peach                   # 복숭아
-  140: pear                    # 배
-  141: persimmon               # 감
-  
-  # 서양식 (Western)
-  142: pizza                   # 피자
-  143: spaghetti               # 스파게티
-  144: lasagna                 # 라자냐
-  145: risotto                 # 리소토
-  146: sandwich                # 샌드위치
-  147: burrito                 # 부리또
-  
-  # 일식 (Japanese)
-  148: sashimi_plate           # 모둠회
-  149: ramen_japanese          # 라멘
-  150: gyudon                  # 규동
-  151: takoyaki                # 타코야키
-  152: okonomiyaki             # 오코노미야키
-  
-  # 기타 (Others)
-  153: mixed_dish              # 기타 혼합요리
+  0: Bread
+  1: Dairy product
+  2: Dessert
+  3: Egg
+  4: Fried food
+  5: Meat
+  6: Noodles-Pasta
+  7: Rice
+  8: Seafood
+  9: Soup
+  10: Vegetable-Fruit
 
 # ============================================================
-# Dataset structure should look like:
-# datasets/korean_food/
+# OPTION 2: Food-101 Dataset (Large-scale Training)
+# ============================================================
+# Uncomment below and comment out Option 1 to use Food-101
+
+# path: ./datasets/food101
+# train: images/train
+# val: images/val
+# nc: 101
+# names:
+#   0: apple_pie
+#   1: baby_back_ribs
+#   2: baklava
+#   3: beef_carpaccio
+#   4: beef_tartare
+#   5: beet_salad
+#   6: beignets
+#   7: bibimbap
+#   8: bread_pudding
+#   9: breakfast_burrito
+#   10: bruschetta
+#   11: caesar_salad
+#   12: cannoli
+#   13: caprese_salad
+#   14: carrot_cake
+#   15: ceviche
+#   16: cheese_plate
+#   17: cheesecake
+#   18: chicken_curry
+#   19: chicken_quesadilla
+#   20: chicken_wings
+#   21: chocolate_cake
+#   22: chocolate_mousse
+#   23: churros
+#   24: clam_chowder
+#   25: club_sandwich
+#   26: crab_cakes
+#   27: creme_brulee
+#   28: croque_madame
+#   29: cup_cakes
+#   30: deviled_eggs
+#   31: donuts
+#   32: dumplings
+#   33: edamame
+#   34: eggs_benedict
+#   35: escargots
+#   36: falafel
+#   37: filet_mignon
+#   38: fish_and_chips
+#   39: foie_gras
+#   40: french_fries
+#   41: french_onion_soup
+#   42: french_toast
+#   43: fried_calamari
+#   44: fried_rice
+#   45: frozen_yogurt
+#   46: garlic_bread
+#   47: gnocchi
+#   48: greek_salad
+#   49: grilled_cheese_sandwich
+#   50: grilled_salmon
+#   51: guacamole
+#   52: gyoza
+#   53: hamburger
+#   54: hot_and_sour_soup
+#   55: hot_dog
+#   56: huevos_rancheros
+#   57: hummus
+#   58: ice_cream
+#   59: lasagna
+#   60: lobster_bisque
+#   61: lobster_roll_sandwich
+#   62: macaroni_and_cheese
+#   63: macarons
+#   64: miso_soup
+#   65: mussels
+#   66: nachos
+#   67: omelette
+#   68: onion_rings
+#   69: oysters
+#   70: pad_thai
+#   71: paella
+#   72: pancakes
+#   73: panna_cotta
+#   74: peking_duck
+#   75: pho
+#   76: pizza
+#   77: pork_chop
+#   78: poutine
+#   79: prime_rib
+#   80: pulled_pork_sandwich
+#   81: ramen
+#   82: ravioli
+#   83: red_velvet_cake
+#   84: risotto
+#   85: samosa
+#   86: sashimi
+#   87: scallops
+#   88: seaweed_salad
+#   89: shrimp_and_grits
+#   90: spaghetti_bolognese
+#   91: spaghetti_carbonara
+#   92: spring_rolls
+#   93: steak
+#   94: strawberry_shortcake
+#   95: sushi
+#   96: tacos
+#   97: takoyaki
+#   98: tiramisu
+#   99: tuna_tartare
+#   100: waffles
+
+# ============================================================
+# OPTION 3: Korean Food Dataset
+# ============================================================
+# Uncomment below and comment out Option 1 to use Korean Food
+
+# path: ./datasets/korean_food
+# train: images/train
+# val: images/val
+# nc: 53  # Adjust based on actual Korean food dataset classes
+# names:
+#   0: bibimbap          # 비빔밥
+#   1: bulgogi           # 불고기
+#   2: dakgalbi          # 닭갈비
+#   3: doenjang_jjigae   # 된장찌개
+#   4: galbi             # 갈비
+#   5: galbitang         # 갈비탕
+#   6: gamjatang         # 감자탕
+#   7: japchae           # 잡채
+#   8: kimchi            # 김치
+#   9: kimchi_jjigae     # 김치찌개
+#   10: kimbap           # 김밥
+#   11: mandu            # 만두
+#   12: naengmyeon       # 냉면
+#   13: samgyeopsal      # 삼겹살
+#   14: samgyetang       # 삼계탕
+#   15: tteokbokki       # 떡볶이
+#   # Add more Korean food classes as per your dataset
+#   # Total: 53 classes (example, adjust based on actual data)
+
+# ============================================================
+# Dataset structure for each option:
+# ============================================================
+
+# Option 1: Food-11
+# datasets/food11/
 # ├── images/
-# │   ├── train/              # 80% of data (~218,226 images)
+# │   ├── train/
 # │   │   ├── img001.jpg
 # │   │   └── ...
-# │   └── val/                # 20% of data (~54,557 images)
+# │   └── val/
 # │       ├── img101.jpg
 # │       └── ...
 # └── labels/
@@ -232,10 +196,51 @@ names:
 #     │   └── ...
 #     └── val/
 #         └── ...
-#
+
+# Option 2: Food-101
+# datasets/food101/
+# ├── images/
+# │   ├── train/
+# │   └── val/
+# └── labels/
+#     ├── train/
+#     └── val/
+
+# Option 3: Korean Food
+# datasets/korean_food/
+# ├── images/
+# │   ├── train/
+# │   └── val/
+# └── labels/
+#     ├── train/
+#     └── val/
+
+# ============================================================
 # Label format (YOLO format):
 # Each .txt file contains one line per object:
 # <class_id> <x_center> <y_center> <width> <height>
 # All values are normalized (0-1) relative to image dimensions
-# Example: 31 0.5 0.5 0.3 0.4  (bulgogi in center of image)
+# Example: 5 0.5 0.5 0.3 0.4  (Meat in center of image)
 # ============================================================
+
+# ============================================================
+# Download Instructions:
+# ============================================================
+# 1. Setup dataset directory structure:
+#    python download_datasets.py --setup-structure
+#
+# 2. Download specific dataset:
+#    python download_datasets.py --download-food11
+#    python download_datasets.py --download-food101
+#    python download_datasets.py --download-korean-food
+#
+# 3. Download all YOLO datasets:
+#    python download_datasets.py --download-all-yolo
+#
+# 4. Verify downloads:
+#    python download_datasets.py --verify
+#
+# 5. Start training with selected dataset:
+#    python yolo_training.py --data data.yaml --epochs 100
+# ============================================================
+
