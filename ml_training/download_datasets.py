@@ -206,12 +206,18 @@ class KaggleDatasetDownloader:
     def download_dataset(self, dataset_key: str) -> bool:
         """Kaggle 데이터셋 다운로드."""
         if dataset_key not in self.DATASETS:
-            print(f"Unknown dataset: {dataset_key}")
+            print(f"✗ Unknown dataset: {dataset_key}")
+            print(f"  Available datasets: {', '.join(self.DATASETS.keys())}")
             return False
         
         info = self.DATASETS[dataset_key]
-        output_dir = self.base_dir / info['output_dir']
-        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            output_dir = self.base_dir / info['output_dir']
+            output_dir.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            print(f"✗ 디렉토리 생성 실패: {e}")
+            return False
         
         print(f"\n{'='*60}")
         print(f"Downloading: {info['name']}")
@@ -222,13 +228,16 @@ class KaggleDatasetDownloader:
         print()
         
         # 이미 다운로드 되었는지 확인
-        existing_files = list(output_dir.rglob("*.jpg")) + \
-                        list(output_dir.rglob("*.jpeg")) + \
-                        list(output_dir.rglob("*.png"))
-        if len(existing_files) > 100:  # 이미 상당량의 이미지가 있으면 건너뛰기
-            print(f"⚠ 데이터셋이 이미 존재합니다 ({len(existing_files)} 이미지 발견)")
-            print(f"  기존 데이터 사용. 다시 다운로드하려면 {output_dir} 삭제 후 재실행")
-            return True
+        try:
+            existing_files = list(output_dir.rglob("*.jpg")) + \
+                            list(output_dir.rglob("*.jpeg")) + \
+                            list(output_dir.rglob("*.png"))
+            if len(existing_files) > 100:  # 이미 상당량의 이미지가 있으면 건너뛰기
+                print(f"⚠ 데이터셋이 이미 존재합니다 ({len(existing_files)} 이미지 발견)")
+                print(f"  기존 데이터 사용. 다시 다운로드하려면 {output_dir} 삭제 후 재실행")
+                return True
+        except Exception as e:
+            print(f"⚠ 파일 확인 중 오류 (무시하고 계속): {e}")
         
         try:
             import kaggle
@@ -243,17 +252,26 @@ class KaggleDatasetDownloader:
             )
             
             # 다운로드 검증
-            downloaded_files = list(output_dir.rglob("*.jpg")) + \
-                             list(output_dir.rglob("*.jpeg")) + \
-                             list(output_dir.rglob("*.png"))
-            
-            if len(downloaded_files) > 0:
-                print(f"✓ 다운로드 완료: {output_dir}")
-                print(f"  {len(downloaded_files)} 이미지 파일 발견")
-                return True
-            else:
-                print(f"⚠ 다운로드는 완료되었으나 이미지 파일이 없습니다.")
-                print(f"  압축 파일 확인: {output_dir}")
+            try:
+                downloaded_files = list(output_dir.rglob("*.jpg")) + \
+                                 list(output_dir.rglob("*.jpeg")) + \
+                                 list(output_dir.rglob("*.png"))
+                
+                if len(downloaded_files) > 0:
+                    print(f"✓ 다운로드 완료: {output_dir}")
+                    print(f"  {len(downloaded_files)} 이미지 파일 발견")
+                    return True
+                else:
+                    print(f"⚠ 다운로드는 완료되었으나 이미지 파일이 없습니다.")
+                    print(f"  압축 파일 확인: {output_dir}")
+                    # 압축 파일이 있는지 확인
+                    zip_files = list(output_dir.rglob("*.zip"))
+                    if zip_files:
+                        print(f"  ⚠ 압축 파일 발견: {zip_files[0].name}")
+                        print(f"  수동으로 압축 해제가 필요할 수 있습니다")
+                    return False
+            except Exception as e:
+                print(f"⚠ 다운로드 검증 중 오류: {e}")
                 return False
             
         except ImportError:
@@ -302,29 +320,42 @@ class KaggleDatasetDownloader:
         
         results = {}
         
-        for key, info in self.DATASETS.items():
-            dataset_dir = self.base_dir / info['output_dir']
-            
-            if dataset_dir.exists():
-                # 이미지 파일 수 계산
-                images = list(dataset_dir.rglob("*.jpg")) + \
-                         list(dataset_dir.rglob("*.jpeg")) + \
-                         list(dataset_dir.rglob("*.png"))
-                labels = list(dataset_dir.rglob("*.txt")) + \
-                         list(dataset_dir.rglob("*.xml")) + \
-                         list(dataset_dir.rglob("*.json"))
+        try:
+            for key, info in self.DATASETS.items():
+                dataset_dir = self.base_dir / info['output_dir']
                 
-                results[key] = {
-                    'exists': True,
-                    'images': len(images),
-                    'labels': len(labels)
-                }
-            else:
-                results[key] = {
-                    'exists': False,
-                    'images': 0,
-                    'labels': 0
-                }
+                try:
+                    if dataset_dir.exists():
+                        # 이미지 파일 수 계산
+                        images = list(dataset_dir.rglob("*.jpg")) + \
+                                 list(dataset_dir.rglob("*.jpeg")) + \
+                                 list(dataset_dir.rglob("*.png"))
+                        labels = list(dataset_dir.rglob("*.txt")) + \
+                                 list(dataset_dir.rglob("*.xml")) + \
+                                 list(dataset_dir.rglob("*.json"))
+                        
+                        results[key] = {
+                            'exists': True,
+                            'images': len(images),
+                            'labels': len(labels)
+                        }
+                    else:
+                        results[key] = {
+                            'exists': False,
+                            'images': 0,
+                            'labels': 0
+                        }
+                except Exception as e:
+                    print(f"⚠ {info['name']} 검증 중 오류: {e}")
+                    results[key] = {
+                        'exists': False,
+                        'images': 0,
+                        'labels': 0,
+                        'error': str(e)
+                    }
+        except Exception as e:
+            print(f"✗ 전체 검증 프로세스 오류: {e}")
+            return {}
         
         # 결과 출력
         print("Dataset Verification Results:")
@@ -468,6 +499,9 @@ def main():
         if downloader.check_kaggle_api():
             downloader.download_dataset('korean_ocr')
     elif args.verify:
+        downloader.verify_datasets()
+    elif args.stats:
+        # stats는 verify와 동일한 기능
         downloader.verify_datasets()
     elif args.show_roboflow:
         downloader.print_roboflow_instructions()
