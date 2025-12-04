@@ -34,6 +34,8 @@ import argparse
 import os
 from pathlib import Path
 from typing import Optional
+import pandas as pd
+import matplotlib.pyplot as plt
 
 try:
     from ultralytics import YOLO

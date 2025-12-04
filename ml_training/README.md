@@ -54,42 +54,48 @@ unzip koreanfood-objectdetection-dataset.zip -d datasets/korean_food/
 
 ### 2. EasyOCR - Nutrition Label Recognition
 
-#### Option A: Nutritional Facts from Food Label (Kaggle) ⭐
-- **Source**: https://www.kaggle.com/datasets/shensivam/nutritional-facts-from-food-label
-- **Size**: 영양 성분표 이미지 + 레이블
-- **Purpose**: Nutrition label OCR training
+**3-Stage Training Pipeline** (프로젝트에서 사용한 방법론):
 
-**Download Instructions:**
+#### Stage 1: Korean Character Recognition (1,000 samples)
+- **Tool**: TextRecognitionDataGenerator (trdg)
+- **Purpose**: Basic Hangul character recognition
+- **Generate with:**
+```bash
+python easyocr_trainer.py --generate-korean-data 1000 --output-dir ./easyocr_training/training_data
+```
+
+#### Stage 2: Product Label OCR (50,000 samples)
+- **Source**: https://www.kaggle.com/datasets/shensivam/nutritional-facts-from-food-label
+- **Purpose**: General product label text patterns
+- **Download:**
 ```bash
 kaggle datasets download -d shensivam/nutritional-facts-from-food-label
 unzip nutritional-facts-from-food-label.zip -d datasets/nutrition_ocr/
 ```
 
-#### Option B: Handwriting OCR Data (Japanese/Korean) (Kaggle) ⭐
+**Additional Korean OCR Dataset:**
 - **Source**: https://www.kaggle.com/datasets/nexdatafrank/handwriting-ocr-data-of-japanese-and-korean
-- **Size**: 일본어/한국어 손글씨 이미지
-- **Purpose**: Korean text recognition training
-
-**Download Instructions:**
+- **Purpose**: Korean handwriting recognition
 ```bash
 kaggle datasets download -d nexdatafrank/handwriting-ocr-data-of-japanese-and-korean
 unzip handwriting-ocr-data-of-japanese-and-korean.zip -d datasets/korean_ocr/
 ```
 
-#### Option C: Korean Text Generation (자체 생성)
-- **Tool**: TextRecognitionDataGenerator (trdg)
-- **Size**: 1,000+ samples (customizable)
-- **Purpose**: Korean character recognition for nutrition terms
-
-**Generate with:**
+#### Stage 3: Nutrition Label Fine-tuning (800 samples)
+- **Size**: 800+ manually labeled samples
+- **Purpose**: Specific Korean nutrition terms (탄수화물, 포화지방, 트랜스지방, etc.)
+- **Method**: Capture Korean product nutrition labels and annotate
+- **Prepare with:**
 ```bash
-python easyocr_trainer.py --generate-korean-data 1000
+python easyocr_trainer.py --prepare-data <images_dir> <annotations.json> --output-dir ./easyocr_training/training_data
 ```
 
-#### Option D: Custom Nutrition Labels (직접 수집)
-- **Size**: 800+ manually labeled samples
-- **Purpose**: Fine-tuning for nutrition-specific Korean terms (탄수화물, 포화지방, etc.)
-- **Note**: Capture and label nutrition labels from Korean products
+#### EasyOCR Training Configuration
+- **Train/Val Split**: 80:20
+- **Epochs**: 3,155 iterations
+- **OCR Error Correction**: Post-processing for common errors ('브랜스'→'트랜스', '탄백질'→'단백질')
+
+**Complete EasyOCR Training Guide**: See [`EASYOCR_TRAINING_GUIDE.md`](EASYOCR_TRAINING_GUIDE.md)
 
 ---
 
@@ -151,13 +157,45 @@ pip install kaggle
 ```
 
 ### 2. Prepare Datasets
+
+**Option A: 자동 다운로드 (Kaggle API)**
 ```bash
-# 디렉토리 구조 설정
+# Step 1: Kaggle API 설정
+# https://www.kaggle.com/settings 에서 'Create New Token' 클릭
+# 다운로드된 kaggle.json을 ~/.kaggle/ 에 저장
+mkdir -p ~/.kaggle
+mv ~/Downloads/kaggle.json ~/.kaggle/
+chmod 600 ~/.kaggle/kaggle.json
+
+# Step 2: 디렉토리 구조 설정
 python download_datasets.py --setup-structure
 
-# Kaggle 데이터셋 다운로드
+# Step 3: 모든 Kaggle 데이터셋 다운로드
 python download_datasets.py --download-all
+
+# Step 4: 다운로드 검증
+python download_datasets.py --verify
 ```
+
+**Option B: 수동 다운로드**
+
+Kaggle API 설정이 어려운 경우 수동으로 다운로드:
+
+1. **Food-11 Dataset**
+   - URL: https://www.kaggle.com/datasets/trolukovich/food11-image-dataset
+   - 다운로드 후: `datasets/food11/` 에 압축 해제
+
+2. **Korean Food Object Detection**
+   - URL: https://www.kaggle.com/datasets/jiminkoo/koreanfood-objectdetection-dataset
+   - 다운로드 후: `datasets/korean_food/` 에 압축 해제
+
+3. **Nutritional Facts OCR**
+   - URL: https://www.kaggle.com/datasets/shensivam/nutritional-facts-from-food-label
+   - 다운로드 후: `datasets/nutrition_ocr/` 에 압축 해제
+
+4. **Korean OCR (Optional)**
+   - URL: https://www.kaggle.com/datasets/nexdatafrank/handwriting-ocr-data-of-japanese-and-korean
+   - 다운로드 후: `datasets/korean_ocr/` 에 압축 해제
 
 ### 3. Train Models
 
@@ -168,12 +206,25 @@ python yolo_training.py --data data.yaml --epochs 100 --batch 16
 
 **EasyOCR:**
 ```bash
-# Generate Korean training data
-python easyocr_trainer.py --generate-korean-data 1000
+# Step 1: Setup training environment
+python easyocr_trainer.py --setup-training --output-dir ./easyocr_training
 
-# Prepare training data from annotations
-python easyocr_trainer.py --prepare-data datasets/easyocr/images datasets/easyocr/annotations.json
+# Step 2: Generate Korean synthetic data (Stage 1)
+python easyocr_trainer.py --generate-korean-data 1000 --output-dir ./easyocr_training/training_data
+
+# Step 3: Download and prepare datasets (Stage 2 & 3)
+# Download Kaggle datasets first, then prepare
+python easyocr_trainer.py --prepare-data datasets/nutrition_ocr annotations.json --output-dir ./easyocr_training/training_data
+
+# Step 4: Start training (3155 epochs, 80:20 split)
+cd easyocr_training
+bash train.sh
+
+# OR: Run inference with trained model
+python easyocr_trainer.py --infer path/to/nutrition_label.jpg
 ```
+
+**For detailed EasyOCR training guide, see**: [`EASYOCR_TRAINING_GUIDE.md`](EASYOCR_TRAINING_GUIDE.md)
 
 **Collaborative Filtering:**
 ```bash
@@ -203,9 +254,76 @@ python collaborative_filtering.py --method cosine --remaining-cal 500 --remainin
 
 ---
 
-## Notes
+## Troubleshooting Dataset Download
 
-- Large datasets (Food-11, AI Hub) should NOT be committed to git
-- Add `datasets/` to `.gitignore`
-- Training requires GPU for reasonable performance (YOLO, EasyOCR)
-- AI Hub datasets require Korean ID for registration
+### Kaggle API 인증 오류
+**오류**: `OSError: Could not find kaggle.json`
+**해결**:
+```bash
+# 1. Kaggle에서 API 토큰 생성
+# https://www.kaggle.com/settings -> "Create New API Token"
+
+# 2. 토큰 파일 이동
+mkdir -p ~/.kaggle
+mv ~/Downloads/kaggle.json ~/.kaggle/
+chmod 600 ~/.kaggle/kaggle.json
+
+# 3. 검증
+python -c "import kaggle; kaggle.api.authenticate(); print('Success!')"
+```
+
+### 다운로드 속도가 느린 경우
+- Kaggle CLI를 사용한 수동 다운로드:
+```bash
+# 개별 데이터셋 다운로드
+kaggle datasets download -d trolukovich/food11-image-dataset
+kaggle datasets download -d jiminkoo/koreanfood-objectdetection-dataset
+kaggle datasets download -d shensivam/nutritional-facts-from-food-label
+
+# 압축 해제
+unzip food11-image-dataset.zip -d datasets/food11/
+unzip koreanfood-objectdetection-dataset.zip -d datasets/korean_food/
+unzip nutritional-facts-from-food-label.zip -d datasets/nutrition_ocr/
+```
+
+### 데이터셋이 올바르게 다운로드되었는지 확인
+```bash
+python download_datasets.py --verify
+```
+
+**예상 결과**:
+```
+Dataset Verification Results:
+============================================================
+
+Food-11 Image Dataset:
+  Directory exists: Yes
+  Images found: 16,643
+  Labels found: 0
+  Status: ✓
+
+Korean Food Object Detection:
+  Directory exists: Yes
+  Images found: 3,000+
+  Labels found: 3,000+
+  Status: ✓
+```
+
+### 디렉토리 구조가 잘못된 경우
+```bash
+# 디렉토리 구조 재생성
+python download_datasets.py --setup-structure
+
+# 검증
+ls -la datasets/
+```
+
+### Windows에서 경로 오류 발생
+Windows에서는 경로 구분자 문제로 오류가 발생할 수 있습니다:
+```powershell
+# PowerShell에서 실행
+python download_datasets.py --setup-structure
+python download_datasets.py --download-all --base-dir .\datasets
+```
+
+---
