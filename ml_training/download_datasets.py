@@ -170,6 +170,15 @@ class KaggleDatasetDownloader:
         print(f"Output: {output_dir}")
         print()
         
+        # 이미 다운로드 되었는지 확인
+        existing_files = list(output_dir.rglob("*.jpg")) + \
+                        list(output_dir.rglob("*.jpeg")) + \
+                        list(output_dir.rglob("*.png"))
+        if len(existing_files) > 100:  # 이미 상당량의 이미지가 있으면 건너뛰기
+            print(f"⚠ 데이터셋이 이미 존재합니다 ({len(existing_files)} 이미지 발견)")
+            print(f"  기존 데이터 사용. 다시 다운로드하려면 {output_dir} 삭제 후 재실행")
+            return True
+        
         try:
             import kaggle
             
@@ -178,18 +187,41 @@ class KaggleDatasetDownloader:
             kaggle.api.dataset_download_files(
                 info['kaggle_id'],
                 path=str(output_dir),
-                unzip=True
+                unzip=True,
+                quiet=False
             )
             
-            print(f"✓ 다운로드 완료: {output_dir}")
-            return True
+            # 다운로드 검증
+            downloaded_files = list(output_dir.rglob("*.jpg")) + \
+                             list(output_dir.rglob("*.jpeg")) + \
+                             list(output_dir.rglob("*.png"))
             
+            if len(downloaded_files) > 0:
+                print(f"✓ 다운로드 완료: {output_dir}")
+                print(f"  {len(downloaded_files)} 이미지 파일 발견")
+                return True
+            else:
+                print(f"⚠ 다운로드는 완료되었으나 이미지 파일이 없습니다.")
+                print(f"  압축 파일 확인: {output_dir}")
+                return False
+            
+        except ImportError:
+            print(f"✗ Kaggle 패키지가 설치되지 않았습니다.")
+            print(f"  설치: pip install kaggle")
+            print(f"\n수동 다운로드:")
+            print(f"  1. {info['url']} 접속")
+            print(f"  2. 'Download' 버튼 클릭")
+            print(f"  3. {output_dir}에 압축 해제")
+            return False
         except Exception as e:
             print(f"✗ 다운로드 실패: {e}")
             print(f"\n수동 다운로드:")
             print(f"  1. {info['url']} 접속")
             print(f"  2. 'Download' 버튼 클릭")
-            print(f"  3. {output_dir}에 압축 해제")
+            print(f"  3. 압축 파일을 {output_dir}에 직접 압축 해제")
+            print(f"\n또는 Kaggle CLI 사용:")
+            print(f"  kaggle datasets download -d {info['kaggle_id']}")
+            print(f"  unzip {info['kaggle_id'].split('/')[-1]}.zip -d {output_dir}")
             return False
     
     def download_all(self):
