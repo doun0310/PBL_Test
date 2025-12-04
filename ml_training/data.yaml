@@ -345,6 +345,66 @@ names:
 #   153: 장아찌          # Pickled vegetables
 
 # ============================================================
+# OPTION 5: Roboflow Korean Food Dataset (Specialized Object Detection)
+# ============================================================
+# Uncomment below and comment out other options to use Roboflow Korean Food
+#
+# Dataset: https://universe.roboflow.com/anonymous-fhuzh/korean-food-iaryc
+# 2,628 images with bounding box annotations for Korean food detection
+#
+# path: ./datasets/roboflow_korean_food
+# train: train/images
+# val: valid/images
+# test: test/images
+#
+# nc: 27  # Number of classes (adjust based on your downloaded version)
+#
+# names:
+#   0: kimchi              # 김치 - Fermented cabbage
+#   1: kimchi-jjigae       # 김치찌개 - Kimchi stew
+#   2: japchae             # 잡채 - Stir-fried glass noodles
+#   3: galbi               # 갈비 - Korean rib
+#   4: baek-kimchi         # 백김치 - White kimchi
+#   5: dongchimi           # 동치미 - Radish water kimchi
+#   6: kongnamul-muchim    # 콩나물무침 - Seasoned bean sprouts
+#   7: udon                # 우동 - Wheat noodles
+#   8: yukhoe              # 육회 - Korean raw beef
+#   9: yeongeun-jorim      # 연근조림 - Braised lotus roots
+#   10: bibimbap           # 비빔밥 - Mixed rice
+#   11: bulgogi            # 불고기 - Marinated beef
+#   12: samgyeopsal        # 삼겹살 - Pork belly
+#   13: jjajangmyeon       # 짜장면 - Black bean noodles
+#   14: tteokbokki         # 떡볶이 - Spicy rice cakes
+#   15: kimbap             # 김밥 - Rice roll
+#   16: doenjang-jjigae    # 된장찌개 - Soybean paste stew
+#   17: sundubu-jjigae     # 순두부찌개 - Soft tofu stew
+#   18: jjamppong          # 짬뽕 - Spicy seafood noodle soup
+#   19: tangsuyuk          # 탕수육 - Sweet and sour pork
+#   20: dakgalbi           # 닭갈비 - Spicy stir-fried chicken
+#   21: bossam             # 보쌈 - Boiled pork wraps
+#   22: naengmyeon         # 냉면 - Cold noodles
+#   23: mandu              # 만두 - Dumplings
+#   24: gimbap             # 김밥 - Alternative romanization
+#   25: japgokbap          # 잡곡밥 - Multi-grain rice
+#   26: sigeumchi-namul    # 시금치나물 - Spinach side dish
+#
+# Download Instructions for Roboflow Dataset:
+# 1. Visit: https://universe.roboflow.com/anonymous-fhuzh/korean-food-iaryc
+# 2. Download dataset in YOLO format
+# 3. Extract to: ./datasets/roboflow_korean_food/
+# 4. Ensure directory structure matches:
+#    datasets/roboflow_korean_food/
+#    ├── train/
+#    │   ├── images/
+#    │   └── labels/
+#    ├── valid/
+#    │   ├── images/
+#    │   └── labels/
+#    └── test/ (optional)
+#        ├── images/
+#        └── labels/
+
+# ============================================================
 # Dataset structure for each option:
 # ============================================================
 
@@ -391,6 +451,18 @@ names:
 #     ├── train/
 #     └── val/
 
+# Option 5: Roboflow Korean Food (Object Detection)
+# datasets/roboflow_korean_food/
+# ├── train/
+# │   ├── images/
+# │   └── labels/
+# ├── valid/
+# │   ├── images/
+# │   └── labels/
+# └── test/ (optional)
+#     ├── images/
+#     └── labels/
+
 # ============================================================
 # Label format (YOLO format):
 # Each .txt file contains one line per object:
@@ -412,6 +484,10 @@ names:
 #    # For AI Hub dataset: Manual download required (Korean account needed)
 #    # Visit: https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=74
 #    # Then use: python convert_aihub_to_yolo.py --input <download_path> --output datasets/aihub_korean_food
+#    #
+#    # For Roboflow Korean Food dataset:
+#    # Visit: https://universe.roboflow.com/anonymous-fhuzh/korean-food-iaryc
+#    # Download in YOLO format and extract to datasets/roboflow_korean_food/
 #
 # 3. Download all YOLO datasets:
 #    python download_datasets.py --download-all-yolo
