@@ -149,7 +149,7 @@ names:
 #   100: waffles
 
 # ============================================================
-# OPTION 3: Korean Food Dataset
+# OPTION 3: Korean Food Dataset (Kaggle)
 # ============================================================
 # Uncomment below and comment out Option 1 to use Korean Food
 
@@ -176,6 +176,173 @@ names:
 #   15: tteokbokki       # 떡볶이
 #   # Add more Korean food classes as per your dataset
 #   # Total: 53 classes (example, adjust based on actual data)
+
+# ============================================================
+# OPTION 4: AI Hub - 건강관리를 위한 음식 이미지 (Korean Health Food)
+# ============================================================
+# Uncomment below and comment out Option 1 to use AI Hub dataset
+# This is a large-scale Korean food dataset optimized from 3,500 to 154 classes
+# Dataset URL: https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=74
+
+# path: ./datasets/aihub_korean_food
+# train: images/train
+# val: images/val
+# nc: 154  # Optimized from 3,500 classes for efficient training
+# names:
+#   0: 가자미식해        # Flatfish fermented dish
+#   1: 간장게장          # Soy sauce marinated crab
+#   2: 갈비구이          # Grilled ribs
+#   3: 갈비탕            # Short rib soup
+#   4: 갈치구이          # Grilled cutlassfish
+#   5: 갈치조림          # Braised cutlassfish
+#   6: 감자국            # Potato soup
+#   7: 감자채볶음        # Stir-fried julienned potato
+#   8: 감자탕            # Pork backbone stew
+#   9: 감자전            # Potato pancake
+#   10: 감자조림         # Braised potato
+#   11: 갓김치           # Leaf mustard kimchi
+#   12: 게장             # Marinated crab
+#   13: 계란찜           # Steamed egg
+#   14: 계란후라이       # Fried egg
+#   15: 고등어구이       # Grilled mackerel
+#   16: 고등어조림       # Braised mackerel
+#   17: 고사리나물       # Fernbrake side dish
+#   18: 곰탕             # Beef bone soup
+#   19: 곱창전골         # Beef tripe hot pot
+#   20: 광어회           # Flounder sashimi
+#   21: 굴전             # Oyster pancake
+#   22: 김밥             # Gimbap (rice roll)
+#   23: 김치             # Kimchi
+#   24: 김치볶음밥       # Kimchi fried rice
+#   25: 김치찌개         # Kimchi stew
+#   26: 김치전           # Kimchi pancake
+#   27: 꼬막무침         # Cockle salad
+#   28: 꽁치구이         # Grilled pacific saury
+#   29: 나박김치         # Watery radish kimchi
+#   30: 낙지볶음         # Stir-fried octopus
+#   31: 누룽지           # Scorched rice
+#   32: 달걀김밥         # Egg gimbap
+#   33: 닭갈비           # Spicy stir-fried chicken
+#   34: 닭개장           # Spicy chicken soup
+#   35: 닭볶음탕         # Spicy braised chicken
+#   36: 더덕구이         # Grilled deodeok root
+#   37: 도토리묵         # Acorn jelly
+#   38: 된장국           # Soybean paste soup
+#   39: 된장찌개         # Soybean paste stew
+#   40: 돼지갈비         # Pork ribs
+#   41: 돼지불고기       # Spicy pork bulgogi
+#   42: 돼지수육         # Boiled pork slices
+#   43: 돼지족발         # Braised pig's feet
+#   44: 두부김치         # Tofu with kimchi
+#   45: 떡갈비           # Grilled short rib patties
+#   46: 떡국             # Rice cake soup
+#   47: 떡볶이           # Spicy rice cakes
+#   48: 라면             # Instant noodles
+#   49: 만두             # Dumplings
+#   50: 막국수           # Buckwheat noodles
+#   51: 매운탕           # Spicy fish stew
+#   52: 멍게             # Sea squirt
+#   53: 메밀전병         # Buckwheat crepe
+#   54: 멸치볶음         # Stir-fried anchovies
+#   55: 명란젓           # Seasoned pollock roe
+#   56: 무국             # Radish soup
+#   57: 무김치           # Radish kimchi
+#   58: 무생채           # Spicy radish salad
+#   59: 물냉면           # Cold buckwheat noodles
+#   60: 물회             # Cold raw fish soup
+#   61: 미역국           # Seaweed soup
+#   62: 미역줄기볶음     # Stir-fried seaweed stems
+#   63: 배추김치         # Napa cabbage kimchi
+#   64: 배추전           # Napa cabbage pancake
+#   65: 백김치           # White kimchi
+#   66: 보리밥           # Barley rice
+#   67: 보쌈             # Napa wraps with pork
+#   68: 북어국           # Dried pollack soup
+#   69: 불고기           # Bulgogi (marinated beef)
+#   70: 비빔국수         # Spicy noodles
+#   71: 비빔냉면         # Spicy cold noodles
+#   72: 비빔밥           # Bibimbap (mixed rice)
+#   73: 빈대떡           # Mung bean pancake
+#   74: 사골곰탕         # Ox bone soup
+#   75: 삼계탕           # Ginseng chicken soup
+#   76: 삼겹살           # Pork belly
+#   77: 삼치구이         # Grilled spanish mackerel
+#   78: 새우볶음밥       # Shrimp fried rice
+#   79: 새우튀김         # Fried shrimp
+#   80: 생선구이         # Grilled fish
+#   81: 생선찌개         # Fish stew
+#   82: 소갈비찜         # Braised beef ribs
+#   83: 소고기무국       # Beef and radish soup
+#   84: 소불고기         # Beef bulgogi
+#   85: 송편             # Half-moon rice cake
+#   86: 수육             # Boiled pork
+#   87: 수제비           # Hand-pulled dough soup
+#   88: 순두부찌개       # Soft tofu stew
+#   89: 시금치나물       # Seasoned spinach
+#   90: 식혜             # Sweet rice drink
+#   91: 쌈밥             # Wrap rice
+#   92: 쌈장             # Ssamjang (wrap sauce)
+#   93: 씨앗호떡         # Seed-filled sweet pancake
+#   94: 아욱국           # Curled mallow soup
+#   95: 약과             # Fried honey cookie
+#   96: 약밥             # Sweet rice with nuts
+#   97: 양념게장         # Spicy marinated crab
+#   98: 양념치킨         # Seasoned fried chicken
+#   99: 어묵             # Fish cake
+#   100: 연근조림        # Braised lotus root
+#   101: 열무김치        # Young radish kimchi
+#   102: 오뎅            # Odeng (fish cake)
+#   103: 오이김치        # Cucumber kimchi
+#   104: 오징어볶음      # Stir-fried squid
+#   105: 오징어채볶음    # Stir-fried dried squid
+#   106: 오징어튀김      # Fried squid
+#   107: 우렁쌈장        # River snail ssamjang
+#   108: 육개장          # Spicy beef soup
+#   109: 잡채            # Japchae (glass noodles)
+#   110: 장어구이        # Grilled eel
+#   111: 장조림          # Braised beef in soy sauce
+#   112: 전복죽          # Abalone porridge
+#   113: 제육볶음        # Spicy stir-fried pork
+#   114: 조기구이        # Grilled yellow croaker
+#   115: 족발            # Pig's feet
+#   116: 죽              # Porridge
+#   117: 쥐포            # Dried filefish fillet
+#   118: 지짐이          # Braised kimchi
+#   119: 진미채          # Seasoned dried squid
+#   120: 짜장면          # Black bean noodles
+#   121: 짬뽕            # Spicy seafood noodles
+#   122: 쭈꾸미볶음      # Stir-fried baby octopus
+#   123: 찜닭            # Braised chicken
+#   124: 총각김치        # Ponytail radish kimchi
+#   125: 추어탕          # Loach soup
+#   126: 칼국수          # Knife-cut noodles
+#   127: 코다리찜        # Steamed half-dried pollack
+#   128: 콩나물국        # Bean sprout soup
+#   129: 콩나물무침      # Seasoned bean sprouts
+#   130: 콩국수          # Cold soy milk noodles
+#   131: 콩비지찌개      # Soybean curd stew
+#   132: 탕수육          # Sweet and sour pork
+#   133: 토란국          # Taro soup
+#   134: 파김치          # Green onion kimchi
+#   135: 파전            # Green onion pancake
+#   136: 파채            # Shredded green onions
+#   137: 포기김치        # Whole cabbage kimchi
+#   138: 표고버섯볶음    # Stir-fried shiitake
+#   139: 풋고추김치      # Green chili kimchi
+#   140: 해물파전        # Seafood and green onion pancake
+#   141: 해물찜          # Steamed seafood
+#   142: 해물탕          # Seafood stew
+#   143: 해파리냉채      # Jellyfish salad
+#   144: 호박전          # Zucchini pancake
+#   145: 홍어무침        # Skate salad
+#   146: 황태구이        # Grilled dried pollack
+#   147: 회              # Raw fish (sashimi)
+#   148: 후라이드치킨    # Fried chicken
+#   149: 훈제오리        # Smoked duck
+#   150: 흑미밥          # Black rice
+#   151: 깍두기          # Diced radish kimchi
+#   152: 닭강정          # Sweet and spicy chicken
+#   153: 장아찌          # Pickled vegetables
 
 # ============================================================
 # Dataset structure for each option:
@@ -206,8 +373,17 @@ names:
 #     ├── train/
 #     └── val/
 
-# Option 3: Korean Food
+# Option 3: Korean Food (Kaggle)
 # datasets/korean_food/
+# ├── images/
+# │   ├── train/
+# │   └── val/
+# └── labels/
+#     ├── train/
+#     └── val/
+
+# Option 4: AI Hub Korean Health Food
+# datasets/aihub_korean_food/
 # ├── images/
 # │   ├── train/
 # │   └── val/
@@ -233,6 +409,9 @@ names:
 #    python download_datasets.py --download-food11
 #    python download_datasets.py --download-food101
 #    python download_datasets.py --download-korean-food
+#    # For AI Hub dataset: Manual download required (Korean account needed)
+#    # Visit: https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=74
+#    # Then use: python convert_aihub_to_yolo.py --input <download_path> --output datasets/aihub_korean_food
 #
 # 3. Download all YOLO datasets:
 #    python download_datasets.py --download-all-yolo
