@@ -6,8 +6,8 @@ Flutter와 Dart를 이용한 현대적인 식단 및 칼로리 추적 모바일 
 
 새로운 AI/ML 기술 스택
 
-1. YOLO v11 음식 인식 🎯
-   - 최신 YOLO v11 객체 감지 모델 적용
+1. YOLO v8 음식 인식 🎯
+   - 최신 YOLO v8 객체 감지 모델 적용
    - 실시간 다중 음식 동시 인식
    - 한식 특화 클래스 지원 (김치, 불고기, 비빔밥 등)
    - Non-Maximum Suppression (NMS) 알고리즘
