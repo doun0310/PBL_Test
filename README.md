@@ -2,7 +2,7 @@ AI 기반 식단 및 칼로리 추적 애플리케이션 (영양소 추적기)
 
 Flutter와 Dart를 이용한 현대적인 식단 및 칼로리 추적 모바일 애플리케이션입니다.
 
-🚀 v3.0.0 주요 업데이트 - YOLO v11 + EasyOCR + Collaborative Filtering
+🚀 v3.0.0 주요 업데이트 - YOLO v8 + EasyOCR + Collaborative Filtering
 
 새로운 AI/ML 기술 스택
 
