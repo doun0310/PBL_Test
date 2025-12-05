@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../models/food_item.dart';
 import '../models/meal_entry.dart';
 import '../services/food_database_service.dart';
 import '../services/ai_food_recognition_service.dart';
@@ -27,23 +28,34 @@ class _PhotoAnalysisScreenState extends State<PhotoAnalysisScreen> {
   }
 
   Future<void> _analyzeImage() async {
+    if (!mounted) return;
     setState(() => _isAnalyzing = true);
 
     try {
-      // AI 음식 인식 서비스 사용
-      final recognizedFoods = await AIFoodRecognitionService.recognizeFood(widget.imagePath);
+      // AI 음식 인식 서비스 호출
+      final List<FoodItem> recognizedFoods =
+      await AIFoodRecognitionService.recognizeFood(widget.imagePath);
 
+      if (!mounted) return;
       setState(() {
+        // 인식된 FoodItem 목록을 FoodItemEntry 목록으로 변환
         _detectedFoods = recognizedFoods.map((food) {
           return FoodItemEntry(
             foodItem: food,
-            servingSize: food.servingSize,
+            servingSize: food.servingSize, // 기본 제공량으로 초기화
           );
         }).toList();
         _isAnalyzing = false;
       });
     } catch (e) {
-      // 에러 시 기본 분석 수행
+      print('❌ 이미지 분석 실패: $e');
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('음식 분석에 실패했습니다: $e')),
+      );
+
+      // 에러 발생 시 임의의 음식 데이터로 대체 (Fallback)
       final sampleFoods = FoodDatabaseService.getAllFoods();
       final randomFoods = (sampleFoods..shuffle()).take(3).toList();
 
@@ -67,7 +79,7 @@ class _PhotoAnalysisScreenState extends State<PhotoAnalysisScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('음식 분석'),
+        title: const Text('음식 분석 결과'),
         actions: [
           if (!_isAnalyzing && _detectedFoods.isNotEmpty)
             TextButton(
@@ -88,6 +100,8 @@ class _PhotoAnalysisScreenState extends State<PhotoAnalysisScreen> {
           Expanded(
             child: _isAnalyzing
                 ? _buildAnalyzingView()
+                : _detectedFoods.isEmpty
+                ? _buildNoResultsView()
                 : _buildDetectedFoods(),
           ),
         ],
@@ -130,6 +144,26 @@ class _PhotoAnalysisScreenState extends State<PhotoAnalysisScreen> {
               fontSize: 14,
               color: Colors.grey[600],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoResultsView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off,
+            size: 60,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '발견된 음식이 없습니다.',
+            style: TextStyle(fontSize: 18, color: Colors.grey),
           ),
         ],
       ),
