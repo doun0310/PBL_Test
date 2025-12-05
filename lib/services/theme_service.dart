@@ -175,28 +175,41 @@ class ThemeService extends ChangeNotifier {
     );
   }
 
-  // 다크 테마
+  // 다크 테마 - 순수 검은 배경과 흰색 텍스트
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       primarySwatch: Colors.green,
       primaryColor: const Color(0xFF66BB6A),
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF66BB6A),
-        primary: const Color(0xFF66BB6A),
+      colorScheme: const ColorScheme.dark(
+        primary: Color(0xFF66BB6A),
+        secondary: Color(0xFF81C784),
+        surface: Color(0xFF000000),  // 순수 검은색
+        background: Color(0xFF000000),  // 순수 검은색
+        error: Color(0xFFCF6679),
+        onPrimary: Colors.black,
+        onSecondary: Colors.black,
+        onSurface: Colors.white,  // 흰색 텍스트
+        onBackground: Colors.white,  // 흰색 텍스트
+        onError: Colors.black,
         brightness: Brightness.dark,
-        surface: const Color(0xFF1E1E1E),
       ),
-      scaffoldBackgroundColor: const Color(0xFF121212),
+      scaffoldBackgroundColor: Colors.black,  // 순수 검은색 배경
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF1E1E1E),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.black,  // 순수 검은색
+        foregroundColor: Colors.white,  // 흰색 텍스트
         elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),  // 흰색 아이콘
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       cardTheme: CardThemeData(
         elevation: 2,
-        color: const Color(0xFF1E1E1E),
+        color: const Color(0xFF1A1A1A),  // 카드는 약간 밝은 검은색
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -204,7 +217,7 @@ class ThemeService extends ChangeNotifier {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF66BB6A),
-          foregroundColor: Colors.black,
+          foregroundColor: Colors.white,  // 흰색 텍스트
           elevation: 2,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
@@ -216,6 +229,23 @@ class ThemeService extends ChangeNotifier {
         style: TextButton.styleFrom(
           foregroundColor: const Color(0xFF66BB6A),
         ),
+      ),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: Colors.white),
+        displayMedium: TextStyle(color: Colors.white),
+        displaySmall: TextStyle(color: Colors.white),
+        headlineLarge: TextStyle(color: Colors.white),
+        headlineMedium: TextStyle(color: Colors.white),
+        headlineSmall: TextStyle(color: Colors.white),
+        titleLarge: TextStyle(color: Colors.white),
+        titleMedium: TextStyle(color: Colors.white),
+        titleSmall: TextStyle(color: Colors.white),
+        bodyLarge: TextStyle(color: Colors.white),
+        bodyMedium: TextStyle(color: Colors.white),
+        bodySmall: TextStyle(color: Colors.white70),
+        labelLarge: TextStyle(color: Colors.white),
+        labelMedium: TextStyle(color: Colors.white),
+        labelSmall: TextStyle(color: Colors.white70),
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
@@ -230,46 +260,67 @@ class ThemeService extends ChangeNotifier {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.white24),
         ),
+        labelStyle: const TextStyle(color: Colors.white70),
+        hintStyle: const TextStyle(color: Colors.white38),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFF1E1E1E),
+        backgroundColor: Colors.black,  // 순수 검은색
         selectedItemColor: Color(0xFF66BB6A),
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Colors.white54,  // 흰색 계열
         elevation: 8,
       ),
       dividerColor: Colors.white24,
+      iconTheme: const IconThemeData(color: Colors.white),  // 흰색 아이콘
       visualDensity: VisualDensity.adaptivePlatformDensity,
     );
   }
 
-  // 테마에 따른 색상 가져오기
+  // 테마에 따른 색상 가져오기 (테마 색상 우선 사용)
   static Color getCardColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? const Color(0xFF1E1E1E)
+        ? const Color(0xFF1A1A1A)  // 카드는 약간 밝은 검은색
         : Colors.white;
   }
 
   static Color getBackgroundColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? const Color(0xFF121212)
+        ? Colors.black  // 순수 검은색
         : const Color(0xFFF5F5F5);
   }
 
   static Color getTextColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white
+        ? Colors.white  // 순수 흰색
         : const Color(0xFF2C3E50);
   }
 
   static Color getSecondaryTextColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white70
+        ? Colors.white70  // 약간 투명한 흰색
         : Colors.grey[600]!;
   }
 
   static Color getDividerColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white24
+        ? Colors.white24  // 흰색 계열 구분선
         : Colors.grey[300]!;
+  }
+
+  static Color getIconColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white  // 순수 흰색 아이콘
+        : const Color(0xFF2C3E50);
+  }
+
+  static Color getAppBarBackgroundColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.black  // 순수 검은색
+        : Colors.white;
+  }
+
+  static Color getAppBarTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white  // 순수 흰색
+        : const Color(0xFF2C3E50);
   }
 }
