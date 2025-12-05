@@ -25,6 +25,9 @@ dependencies:
   # 아이콘
   cupertino_icons: ^1.0.2
 
+  # 이미지 처리
+  image: ^4.0.17
+
   # 이미지 선택
   image_picker: ^1.0.7
 
