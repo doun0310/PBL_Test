@@ -1,28 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeService extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
-  ThemeMode _themeMode = ThemeMode.light;
+  static const String _systemThemeKey = 'use_system_theme';
+  
+  ThemeMode _themeMode = ThemeMode.system;
+  bool _useSystemTheme = true;
+  bool _isAnimating = false;
 
   ThemeMode get themeMode => _themeMode;
-  bool get isDarkMode => _themeMode == ThemeMode.dark;
+  bool get isDarkMode => _themeMode == ThemeMode.dark || 
+      (_themeMode == ThemeMode.system && _isSystemDark());
+  bool get useSystemTheme => _useSystemTheme;
+  bool get isAnimating => _isAnimating;
+
+  // 시스템 다크모드 감지
+  bool _isSystemDark() {
+    return SchedulerBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
+  }
 
   // 초기화
   Future<void> initialize() async {
     final prefs = await SharedPreferences.getInstance();
-    final isDark = prefs.getBool(_themeKey) ?? false;
-    _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+    _useSystemTheme = prefs.getBool(_systemThemeKey) ?? true;
+    
+    if (_useSystemTheme) {
+      _themeMode = ThemeMode.system;
+    } else {
+      final isDark = prefs.getBool(_themeKey) ?? false;
+      _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+    }
+    
     notifyListeners();
   }
 
-  // 테마 변경
+  // 테마 변경 (애니메이션 포함)
   Future<void> toggleTheme() async {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _isAnimating = true;
+    notifyListeners();
+    
+    // Chrome처럼 자연스러운 전환을 위한 짧은 딜레이
+    await Future.delayed(const Duration(milliseconds: 50));
+    
+    if (_useSystemTheme) {
+      // 시스템 테마 사용 중이면 수동 모드로 전환
+      _useSystemTheme = false;
+      _themeMode = _isSystemDark() ? ThemeMode.light : ThemeMode.dark;
+    } else {
+      // 수동 모드에서 토글
+      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    }
     
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_themeKey, _themeMode == ThemeMode.dark);
+    await prefs.setBool(_systemThemeKey, _useSystemTheme);
     
+    notifyListeners();
+    
+    // 애니메이션 완료 후 상태 리셋
+    await Future.delayed(const Duration(milliseconds: 200));
+    _isAnimating = false;
+    notifyListeners();
+  }
+
+  // 시스템 테마 사용 설정
+  Future<void> setUseSystemTheme(bool value) async {
+    _isAnimating = true;
+    notifyListeners();
+    
+    await Future.delayed(const Duration(milliseconds: 50));
+    
+    _useSystemTheme = value;
+    if (value) {
+      _themeMode = ThemeMode.system;
+    } else {
+      _themeMode = _isSystemDark() ? ThemeMode.dark : ThemeMode.light;
+    }
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_systemThemeKey, value);
+    if (!value) {
+      await prefs.setBool(_themeKey, _themeMode == ThemeMode.dark);
+    }
+    
+    notifyListeners();
+    
+    await Future.delayed(const Duration(milliseconds: 200));
+    _isAnimating = false;
+    notifyListeners();
+  }
+
+  // 특정 테마로 설정
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _isAnimating = true;
+    notifyListeners();
+    
+    await Future.delayed(const Duration(milliseconds: 50));
+    
+    _themeMode = mode;
+    _useSystemTheme = mode == ThemeMode.system;
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_systemThemeKey, _useSystemTheme);
+    if (!_useSystemTheme) {
+      await prefs.setBool(_themeKey, mode == ThemeMode.dark);
+    }
+    
+    notifyListeners();
+    
+    await Future.delayed(const Duration(milliseconds: 200));
+    _isAnimating = false;
     notifyListeners();
   }
 

@@ -100,18 +100,217 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildDarkModeSwitch() {
     return Consumer<ThemeService>(
       builder: (context, themeService, child) {
-        return SwitchListTile(
-          title: const Text('다크 모드'),
-          subtitle: const Text('어두운 테마 사용'),
-          secondary: Icon(
-            themeService.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-          ),
-          value: themeService.isDarkMode,
-          onChanged: (value) {
-            themeService.toggleTheme();
-          },
+        return Column(
+          children: [
+            ListTile(
+              leading: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) {
+                  return ScaleTransition(
+                    scale: animation,
+                    child: RotationTransition(
+                      turns: animation,
+                      child: child,
+                    ),
+                  );
+                },
+                child: Icon(
+                  themeService.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                  key: ValueKey<bool>(themeService.isDarkMode),
+                  color: themeService.isDarkMode ? Colors.deepPurple[200] : Colors.orange[700],
+                ),
+              ),
+              title: const Text('테마'),
+              subtitle: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  themeService.useSystemTheme 
+                      ? '시스템 설정 사용 중' 
+                      : (themeService.isDarkMode ? '다크 모드' : '라이트 모드'),
+                  key: ValueKey<String>(
+                    themeService.useSystemTheme 
+                        ? 'system' 
+                        : (themeService.isDarkMode ? 'dark' : 'light'),
+                  ),
+                ),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _showThemeDialog(context, themeService),
+            ),
+            // 시스템 테마 사용 스위치
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              child: !themeService.useSystemTheme
+                  ? Container()
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              size: 16,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '시스템 설정에 따라 자동으로 변경됩니다',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+            ),
+          ],
         );
       },
+    );
+  }
+
+  void _showThemeDialog(BuildContext context, ThemeService themeService) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              themeService.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 12),
+            const Text('테마 선택'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildThemeOption(
+              context,
+              themeService,
+              '시스템 설정',
+              '기기 설정에 따라 자동으로 변경됩니다',
+              Icons.phone_android,
+              ThemeMode.system,
+            ),
+            const SizedBox(height: 8),
+            _buildThemeOption(
+              context,
+              themeService,
+              '라이트 모드',
+              '밝은 테마를 사용합니다',
+              Icons.light_mode,
+              ThemeMode.light,
+            ),
+            const SizedBox(height: 8),
+            _buildThemeOption(
+              context,
+              themeService,
+              '다크 모드',
+              '어두운 테마를 사용합니다',
+              Icons.dark_mode,
+              ThemeMode.dark,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('닫기'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context,
+    ThemeService themeService,
+    String title,
+    String subtitle,
+    IconData icon,
+    ThemeMode mode,
+  ) {
+    final isSelected = (mode == ThemeMode.system && themeService.useSystemTheme) ||
+        (mode != ThemeMode.system && !themeService.useSystemTheme && themeService.themeMode == mode);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        color: isSelected 
+            ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected 
+              ? Theme.of(context).colorScheme.primary
+              : Colors.transparent,
+          width: 2,
+        ),
+      ),
+      child: ListTile(
+        leading: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isSelected 
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isSelected 
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).iconTheme.color,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).textTheme.bodySmall?.color,
+          ),
+        ),
+        trailing: AnimatedScale(
+          duration: const Duration(milliseconds: 200),
+          scale: isSelected ? 1.0 : 0.0,
+          child: Icon(
+            Icons.check_circle,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        onTap: () {
+          themeService.setThemeMode(mode);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('테마가 "$title"(으)로 변경되었습니다'),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+      ),
     );
   }
 
