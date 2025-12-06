@@ -3,10 +3,12 @@ flask>=2.3.0
 flask-cors>=4.0.0
 werkzeug>=2.3.0
 
-# EasyOCR dependencies
+# EasyOCR dependencies with advanced image processing
 easyocr>=1.7.0
 Pillow>=10.0.0
 numpy>=1.24.0
+opencv-python>=4.8.0  # For advanced image preprocessing
+opencv-contrib-python>=4.8.0  # Additional OpenCV modules
 
 # Collaborative Filtering dependencies
 pandas>=2.0.0
