@@ -15,11 +15,16 @@ class FirebaseSyncService {
   // 식사 기록 동기화 (업로드)
   static Future<void> syncMealsToCloud() async {
     if (currentUserId == null) {
-      throw Exception('사용자가 로그인되어 있지 않습니다.');
+      throw Exception('로그인이 필요합니다. 먼저 로그인해주세요.');
     }
 
     try {
       final meals = await MealTrackingService.getAllMeals();
+      
+      if (meals.isEmpty) {
+        throw Exception('동기화할 식사 기록이 없습니다.');
+      }
+
       final batch = _firestore.batch();
 
       for (var meal in meals) {
@@ -34,7 +39,10 @@ class FirebaseSyncService {
 
       await batch.commit();
     } catch (e) {
-      throw Exception('식사 기록 동기화 실패: $e');
+      if (e.toString().contains('로그인')) {
+        rethrow;
+      }
+      throw Exception('식사 기록 동기화 실패: ${e.toString()}');
     }
   }
 
@@ -147,17 +155,39 @@ class FirebaseSyncService {
 
   // 전체 백업
   static Future<void> backupAllData() async {
-    await syncMealsToCloud();
-    final goals = await MealTrackingService.getUserGoals();
-    await syncGoalsToCloud(goals);
+    if (currentUserId == null) {
+      throw Exception('로그인이 필요합니다. 먼저 로그인해주세요.');
     }
+    
+    try {
+      await syncMealsToCloud();
+      final goals = await MealTrackingService.getUserGoals();
+      await syncGoalsToCloud(goals);
+    } catch (e) {
+      if (e.toString().contains('로그인') || e.toString().contains('동기화할 식사 기록이 없습니다')) {
+        rethrow;
+      }
+      throw Exception('백업 실패: ${e.toString()}');
+    }
+  }
 
   // 전체 복원
   static Future<void> restoreAllData() async {
-    await restoreMealsFromCloud();
-    final goals = await restoreGoalsFromCloud();
-    if (goals != null) {
-      await MealTrackingService.saveUserGoals(goals);
+    if (currentUserId == null) {
+      throw Exception('로그인이 필요합니다. 먼저 로그인해주세요.');
+    }
+    
+    try {
+      await restoreMealsFromCloud();
+      final goals = await restoreGoalsFromCloud();
+      if (goals != null) {
+        await MealTrackingService.saveUserGoals(goals);
+      }
+    } catch (e) {
+      if (e.toString().contains('로그인')) {
+        rethrow;
+      }
+      throw Exception('복원 실패: ${e.toString()}');
     }
   }
 
