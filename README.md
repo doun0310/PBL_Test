@@ -197,7 +197,7 @@ AI/ML 기술
 알고리즘 상세
 
 YOLO v8 추론 파이프라인
-```
+
 https://universe.roboflow.com/donga-university-1jxx6/korean-food-rgogz ( ROBOFLOW의 이미지셋 ) + 직접 찍은 사진을 활용
 이미지 입력 → 전처리 (640x640) → YOLO v8 추론 
 약 80여개의 한식 및 음식 클래스를 생성
