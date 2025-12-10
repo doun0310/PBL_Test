@@ -122,7 +122,7 @@ UI 및 차트
 - image_picker: 이미지 선택 및 카메라 접근
 
 AI 및 ML
-- tflite_flutter: YOLO v11 TensorFlow Lite 모델 실행
+- tflite_flutter: YOLO v8 TensorFlow Lite 모델 실행
 
 Firebase
 - firebase_core: Firebase 핵심 기능
