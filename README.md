@@ -198,26 +198,26 @@ AI/ML 기술
 ```
 YOLO v8 추론 파이프라인
 ```
-https://universe.roboflow.com/donga-university-1jxx6/korean-food-rgogz ( ROBOFLOW의 이미지셋 ) + 직접 찍은 사진을 활용
-이미지 입력 → 전처리 (640x640) → YOLO v8 추론 
-약 80여개의 한식 및 음식 클래스를 생성
+- https://universe.roboflow.com/donga-university-1jxx6/korean-food-rgogz ( ROBOFLOW의 이미지셋 ) + 직접 찍은 사진을 활용
+- 이미지 입력 → 전처리 (640x640) → YOLO v8 추론 
+- 약 80여개의 한식 및 음식 클래스를 생성
 → 후처리 (NMS) → 음식 클래스 매핑 → FoodItem 반환
 ```
 
 EasyOCR 처리 파이프라인
 ```
-구글에 있는 영양성분표 300개의 이미지 준비
-파이썬 라이브러리 LabelImg를 통한 이미지 라벨 생성
-xml 파일을 JSON 파일로 변환
-EasyOCR 모듈의 train.py 커스텀 모델 생성
-EasyOCR API 서버.py에 커스텀 모델 불러오기
-이미지 입력 → EasyOCR API 호출
+- 구글에 있는 영양성분표 300개의 이미지 준비
+- 파이썬 라이브러리 LabelImg를 통한 이미지 라벨 생성
+- xml 파일을 JSON 파일로 변환
+- EasyOCR 모듈의 train.py 커스텀 모델 생성
+- EasyOCR API 서버.py에 커스텀 모델 불러오기
+- 이미지 입력 → EasyOCR API 호출
 → 텍스트/신뢰도/BBox 추출 → 영양 정보 파싱 → 결과 반환
 ```
 
 Collaborative Filtering 알고리즘
 ```
-사용자 평점 수집 → 유사도 행렬 구성 → K-NN 이웃 탐색
+- 사용자 평점 수집 → 유사도 행렬 구성 → K-NN 이웃 탐색
 → 가중 평점 예측 → 상위 N개 추천 → 하이브리드 보정
 ```
 
