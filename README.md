@@ -177,7 +177,7 @@ AI/ML 기술
 
 1. YOLO v8 음식 인식 
    - YOLO v8 적용
-   - 한식 특화 클래스 40+ 지원
+   - 한식 특화 클래스 80+ 지원
    - NMS 알고리즘으로 중복 제거
    - IoU 기반 정확한 객체 분류
 
@@ -200,7 +200,7 @@ YOLO v8 추론 파이프라인
 ```
 https://universe.roboflow.com/donga-university-1jxx6/korean-food-rgogz ( ROBOFLOW의 이미지셋 ) + 직접 찍은 사진을 활용
 이미지 입력 → 전처리 (640x640) → YOLO v8 추론 
-약 200여개의 한식 및 음식 클래스를 생성
+약 80여개의 한식 및 음식 클래스를 생성
 → 후처리 (NMS) → 음식 클래스 매핑 → FoodItem 반환
 ```
 
