@@ -193,9 +193,9 @@ AI/ML 기술
    - 하이브리드 추천 (CF + 콘텐츠 + 영양)
    - 레시피 평점 및 조회/요리 히스토리 관리
    - 아이템 기반 CF로 유사 레시피 추천
-
+```
 알고리즘 상세
-
+```
 YOLO v8 추론 파이프라인
 
 https://universe.roboflow.com/donga-university-1jxx6/korean-food-rgogz ( ROBOFLOW의 이미지셋 ) + 직접 찍은 사진을 활용
