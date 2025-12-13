@@ -229,5 +229,5 @@ Collaborative Filtering 알고리즘
 - 이도은: 프론트엔드 개발 및 데이터 분석 모델링 & AI 연구
 
 PPT 개발 환경
-- [- https://www.figma.com/slides/Uly2YmSfRX5JGW3O5Ct3Lt/PBL-%EB%B0%9C%ED%91%9C-%EC%9E%90%EB%A3%8C?node-id=5-36&t=CKYt8prnuzTpuv7L-0](https://docs.google.com/presentation/d/1tVDQRF4rRBBjX7g7e8J1J-DnBOQz0e5_ogCYcxqQW2w/edit?usp=sharing)
+- (https://docs.google.com/presentation/d/1tVDQRF4rRBBjX7g7e8J1J-DnBOQz0e5_ogCYcxqQW2w/edit?usp=sharing)
 - (구글 슬라이드로 진행하였음)
