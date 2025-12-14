@@ -79,12 +79,12 @@ class AppLocalizations {
   // 번역 맵
   static final Map<String, Map<String, String>> _localizedValues = {
     'ko': {
-      'app_title': '영양소 추적기',
+      'app_title': 'DIETRAKING',
       'dashboard': '대시보드',
-      'add_meal': '식사 추가',
+      'add_meal': '오늘의 식단',
       'statistics': '통계',
       'profile': '프로필',
-      'community': '커뮤니티',
+      'community': '갤러리',
       'exercise': '운동',
       'recipes': '레시피',
       'settings': '설정',

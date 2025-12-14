@@ -196,7 +196,7 @@ class _OCRScanScreenState extends State<OCRScanScreen> {
       child: Image.file(
         File(_imagePath!),
         height: 300,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain, // BoxFit.cover를 BoxFit.contain으로 변경
       ),
     );
   }

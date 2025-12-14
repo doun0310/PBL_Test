@@ -107,24 +107,3 @@ install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
 
-# 기존 TFLite DLL install 코드 제거하고 이걸로 교체
-if(WIN32)
-  # 상대 경로 대신 절대 경로 사용 (프로젝트 루트 기준)
-  set(BLOBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../blobs")
-
-  # DLL 파일들이 실제로 존재하는지 확인 후 install
-  if(EXISTS "${BLOBS_DIR}/libtensorflowlite_c-win.dll")
-    install(FILES "${BLOBS_DIR}/libtensorflowlite_c-win.dll" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}/blobs/")
-    message(STATUS "✅ Found libtensorflowlite_c-win.dll")
-  else()
-    message(WARNING "⚠️  libtensorflowlite_c-win.dll not found in ${BLOBS_DIR}")
-  endif()
-
-  if(EXISTS "${BLOBS_DIR}/xnnpack.dll")
-    install(FILES "${BLOBS_DIR}/xnnpack.dll" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}/blobs/")
-  endif()
-
-  if(EXISTS "${BLOBS_DIR}/ruy.dll")
-    install(FILES "${BLOBS_DIR}/ruy.dll" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}/blobs/")
-  endif()
-endif()

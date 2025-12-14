@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz_data;
@@ -14,37 +15,43 @@ class NotificationService {
   static Future<void> initialize() async {
     if (_initialized) return;
 
-    tz_data.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
+    try {
+      tz_data.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
 
-    const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+      const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const DarwinInitializationSettings initializationSettingsIOS =
-    DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
-    );
+      const DarwinInitializationSettings initializationSettingsIOS =
+      DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      );
 
-    final WindowsInitializationSettings initializationSettingsWindows =
-    WindowsInitializationSettings(iconPath: 'app_icon',
-        appName: '영양소 추적기',
-        guid: '81234567-89ab-cdef-0123-456789abcdef',
-        appUserModelId: 'com.example.diet_tracking_app');
+      final WindowsInitializationSettings initializationSettingsWindows =
+      WindowsInitializationSettings(
+          appName: '영양소 추적기',
+          guid: '81234567-89ab-cdef-0123-456789abcdef',
+          appUserModelId: 'com.example.diet_tracking_app');
 
-    final initSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      windows: initializationSettingsWindows,
-      iOS: initializationSettingsIOS,
-    );
+      final initSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        windows: initializationSettingsWindows,
+        iOS: initializationSettingsIOS,
+      );
 
-    await _notifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTapped,
-    );
+      await _notifications.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: _onNotificationTapped,
+      );
 
-    _initialized = true;
+      _initialized = true;
+    } catch (e) {
+      // 초기화 실패해도 앱은 계속 작동
+      debugPrint('Notification initialization failed: $e');
+      _initialized = false;
+    }
   }
   // 알림 클릭 시 처리
   static void _onNotificationTapped(NotificationResponse response) {

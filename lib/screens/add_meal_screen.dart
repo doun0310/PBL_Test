@@ -14,7 +14,7 @@ class AddMealScreen extends StatefulWidget {
   final DateTime? initialDate;
 
   const AddMealScreen({
-    super.key, 
+    super.key,
     this.onMealAdded,
     this.initialDate,
   });
@@ -41,7 +41,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text(
-          '식사 추가',
+          '오늘의 식단',
           style: TextStyle(color: Color(0xFF2C3E50)),
         ),
         backgroundColor: Colors.white,
@@ -62,16 +62,16 @@ class _AddMealScreenState extends State<AddMealScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildDateSelector(),
-            _buildMealTypeSelector(),
-            Expanded(
-              child: _selectedFoods.isEmpty
+        child: SingleChildScrollView( // 화면 스크롤을 위해 추가
+          child: Column(
+            children: [
+              _buildDateSelector(),
+              _buildMealTypeSelector(),
+              _selectedFoods.isEmpty
                   ? _buildAddOptions()
                   : _buildFoodsList(),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -307,15 +307,15 @@ class _AddMealScreenState extends State<AddMealScreen> {
   Widget _buildFoodsList() {
     return Column(
       children: [
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: _selectedFoods.length,
-            itemBuilder: (context, index) {
-              final foodEntry = _selectedFoods[index];
-              return _buildFoodItem(foodEntry, index);
-            },
-          ),
+        ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: _selectedFoods.length,
+          shrinkWrap: true, // SingleChildScrollView 내부에서 ListView 크기 조절
+          physics: const NeverScrollableScrollPhysics(), // 부모 스크롤 사용
+          itemBuilder: (context, index) {
+            final foodEntry = _selectedFoods[index];
+            return _buildFoodItem(foodEntry, index);
+          },
         ),
         _buildAddMoreButton(),
       ],

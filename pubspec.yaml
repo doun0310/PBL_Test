@@ -13,6 +13,12 @@ dependencies:
   # HTTP 요청 (EasyOCR API 통신용)
   http: ^1.1.0
 
+  # HTTP 파서
+  http_parser: ^4.0.2
+
+  # 고급 HTTP 클라이언트
+  dio: ^5.2.1
+
   # 카메라 접근
   camera: ^0.11.0
 
@@ -51,6 +57,9 @@ dependencies:
 
   # TensorFlow Lite 패키지
   tflite_flutter: ^0.12.1
+
+  # 다국어 지원
+  easy_localization: ^3.0.5
 
   # 로컬 알림
   flutter_local_notifications: ^19.5.0

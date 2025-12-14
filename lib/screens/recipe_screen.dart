@@ -87,7 +87,7 @@ class _RecipeRecommendationScreenState extends State<RecipeRecommendationScreen>
         const Padding(
           padding: EdgeInsets.all(16),
           child: Text(
-            '🎯 맞춤 추천',
+            '맞춤 추천',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
@@ -141,7 +141,7 @@ class _RecipeRecommendationScreenState extends State<RecipeRecommendationScreen>
         const Padding(
           padding: EdgeInsets.all(16),
           child: Text(
-            '📖 모든 레시피',
+            '모든 레시피',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
@@ -391,7 +391,7 @@ class _RecipeDetailScreen extends StatelessWidget {
                   _buildTimeInfo(),
                   const SizedBox(height: 24),
                   const Text(
-                    '📝 재료',
+                    '재료',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
@@ -407,7 +407,7 @@ class _RecipeDetailScreen extends StatelessWidget {
                       )),
                   const SizedBox(height: 24),
                   const Text(
-                    '👨‍🍳 조리 방법',
+                    '조리 방법',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),

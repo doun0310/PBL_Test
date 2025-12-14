@@ -24,9 +24,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   Future<void> _loadPosts() async {
     setState(() => _isLoading = true);
-    
+
     final posts = await CommunityService.getPostsByCategory(_selectedCategory);
-    
+
     setState(() {
       _posts = posts;
       _isLoading = false;
@@ -37,9 +37,17 @@ class _CommunityScreenState extends State<CommunityScreen> {
     showDialog(
       context: context,
       builder: (context) => _CreatePostDialog(
-        onPost: (post) {
-          CommunityService.addPost(post);
-          _loadPosts();
+        onPost: (post) async {
+          await CommunityService.addPost(post);
+          await _loadPosts();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('게시물이 작성되었습니다'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
         },
       ),
     );
@@ -54,7 +62,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // 검색 기능
+              // 검색 기능 구현 필요
             },
           ),
           IconButton(
@@ -86,7 +94,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
         itemBuilder: (context, index) {
           final category = CommunityService.categories[index];
           final isSelected = category == _selectedCategory;
-          
+
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
@@ -111,11 +119,18 @@ class _CommunityScreenState extends State<CommunityScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.forum, size: 64, color: Colors.grey[400]),
+            Icon(
+              Icons.forum,
+              size: 64,
+              color: Theme.of(context).iconTheme.color?.withOpacity(0.4),
+            ),
             const SizedBox(height: 16),
             Text(
               '아직 게시물이 없습니다',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+              ),
             ),
             const SizedBox(height: 8),
             ElevatedButton.icon(
@@ -128,13 +143,16 @@ class _CommunityScreenState extends State<CommunityScreen> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _posts.length,
-      itemBuilder: (context, index) {
-        final post = _posts[index];
-        return _buildPostCard(post);
-      },
+    return RefreshIndicator(
+      onRefresh: _loadPosts,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _posts.length,
+        itemBuilder: (context, index) {
+          final post = _posts[index];
+          return _buildPostCard(post);
+        },
+      ),
     );
   }
 
@@ -152,7 +170,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
               Row(
                 children: [
                   CircleAvatar(
-                    child: Text(post.userName[0]),
+                    child: Text(post.userName.isNotEmpty ? post.userName[0] : '?'),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -165,7 +183,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
                         ),
                         Text(
                           DateFormat('yyyy-MM-dd HH:mm').format(post.timestamp),
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).textTheme.bodySmall?.color,
+                          ),
                         ),
                       ],
                     ),
@@ -190,18 +211,38 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 post.content,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey[700]),
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                ),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.favorite_border, size: 20, color: Colors.grey[600]),
+                  Icon(
+                    Icons.favorite_border,
+                    size: 20,
+                    color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
+                  ),
                   const SizedBox(width: 4),
-                  Text('${post.likes}', style: TextStyle(color: Colors.grey[600])),
+                  Text(
+                    '${post.likes}',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                  ),
                   const SizedBox(width: 16),
-                  Icon(Icons.comment_outlined, size: 20, color: Colors.grey[600]),
+                  Icon(
+                    Icons.comment_outlined,
+                    size: 20,
+                    color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
+                  ),
                   const SizedBox(width: 4),
-                  Text('${post.comments}', style: TextStyle(color: Colors.grey[600])),
+                  Text(
+                    '${post.comments}',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -211,20 +252,29 @@ class _CommunityScreenState extends State<CommunityScreen> {
     );
   }
 
-  void _showPostDetails(CommunityPost post) {
-    Navigator.push(
+  void _showPostDetails(CommunityPost post) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => _PostDetailScreen(post: post),
       ),
     );
+    // 상세 화면에서 돌아왔을 때 목록 새로고침 (수정/삭제 반영 위해)
+    _loadPosts();
   }
 }
 
+// ==========================================
+// 작성 및 수정 다이얼로그 (기능 통합됨)
+// ==========================================
 class _CreatePostDialog extends StatefulWidget {
   final Function(CommunityPost) onPost;
+  final CommunityPost? existingPost; // 수정을 위해 기존 데이터 받기
 
-  const _CreatePostDialog({required this.onPost});
+  const _CreatePostDialog({
+    required this.onPost,
+    this.existingPost,
+  });
 
   @override
   State<_CreatePostDialog> createState() => _CreatePostDialogState();
@@ -233,12 +283,39 @@ class _CreatePostDialog extends StatefulWidget {
 class _CreatePostDialogState extends State<_CreatePostDialog> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  String _selectedCategory = '일반';
+  late String _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    // 기존 포스트가 있으면(수정 모드) 데이터를 채워넣음
+    if (widget.existingPost != null) {
+      _selectedCategory = widget.existingPost!.category;
+      _titleController.text = widget.existingPost!.title;
+      _contentController.text = widget.existingPost!.content;
+    } else {
+      // 새 글 작성 모드
+      final validCategories = CommunityService.categories
+          .where((c) => c != '전체')
+          .toList();
+      _selectedCategory = validCategories.isNotEmpty ? validCategories.first : '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final menuItems = CommunityService.categories
+        .toSet()
+        .where((c) => c != '전체')
+        .map((category) {
+      return DropdownMenuItem(
+        value: category,
+        child: Text(category),
+      );
+    }).toList();
+
     return AlertDialog(
-      title: const Text('게시물 작성'),
+      title: Text(widget.existingPost != null ? '게시물 수정' : '게시물 작성'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -250,14 +327,7 @@ class _CreatePostDialogState extends State<_CreatePostDialog> {
                 labelText: '카테고리',
                 border: OutlineInputBorder(),
               ),
-              items: CommunityService.categories
-                  .where((c) => c != '전체')
-                  .map((category) {
-                return DropdownMenuItem(
-                  value: category,
-                  child: Text(category),
-                );
-              }).toList(),
+              items: menuItems,
               onChanged: (value) {
                 if (value != null) {
                   setState(() => _selectedCategory = value);
@@ -298,105 +368,430 @@ class _CreatePostDialogState extends State<_CreatePostDialog> {
               return;
             }
 
-            final userName = await AuthService.getCurrentUserName() ?? '사용자';
-            final userId = await AuthService.getCurrentUserId() ?? 'anonymous';
+            // 수정 모드인 경우
+            if (widget.existingPost != null) {
+              final updatedPost = widget.existingPost!.copyWith(
+                title: _titleController.text,
+                content: _contentController.text,
+                category: _selectedCategory,
+                // timestamp는 수정 시 업데이트 할지 여부에 따라 결정 (여기선 유지)
+              );
+              widget.onPost(updatedPost);
+            }
+            // 새 글 작성 모드인 경우
+            else {
+              final userName = await AuthService.getCurrentUserName() ?? '사용자';
+              final userId = await AuthService.getCurrentUserId() ?? 'anonymous';
 
-            final post = CommunityPost(
-              userId: userId,
-              userName: userName,
-              title: _titleController.text,
-              content: _contentController.text,
-              category: _selectedCategory,
-            );
-
-            widget.onPost(post);
+              final post = CommunityPost(
+                userId: userId,
+                userName: userName,
+                title: _titleController.text,
+                content: _contentController.text,
+                category: _selectedCategory,
+              );
+              widget.onPost(post);
+            }
             Navigator.pop(context);
           },
-          child: const Text('게시'),
+          child: Text(widget.existingPost != null ? '수정' : '게시'),
         ),
       ],
     );
   }
 }
 
-class _PostDetailScreen extends StatelessWidget {
+// ==========================================
+// 상세 화면 (삭제/수정 버튼 추가됨)
+// ==========================================
+class _PostDetailScreen extends StatefulWidget {
   final CommunityPost post;
 
   const _PostDetailScreen({required this.post});
 
   @override
+  State<_PostDetailScreen> createState() => _PostDetailScreenState();
+}
+
+class _PostDetailScreenState extends State<_PostDetailScreen> {
+  late CommunityPost _post;
+  List<PostComment> _comments = [];
+  final _commentController = TextEditingController();
+  bool _isLiked = false;
+  bool _isLoading = false;
+  String? _currentUserId; // 현재 로그인한 유저 ID
+
+  @override
+  void initState() {
+    super.initState();
+    _post = widget.post;
+    _checkCurrentUser();
+    _loadComments();
+  }
+
+  Future<void> _checkCurrentUser() async {
+    final userId = await AuthService.getCurrentUserId();
+    setState(() {
+      _currentUserId = userId;
+    });
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadComments() async {
+    final comments = await CommunityService.getComments(_post.id);
+    setState(() {
+      _comments = comments;
+    });
+  }
+
+  Future<void> _handleLike() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+      _isLiked = !_isLiked;
+    });
+
+    await CommunityService.likePost(_post.id);
+
+    final posts = await CommunityService.getAllPosts();
+    final updatedPost = posts.firstWhere((p) => p.id == _post.id, orElse: () => _post);
+
+    setState(() {
+      _post = updatedPost;
+      _isLoading = false;
+    });
+  }
+
+  // 삭제 처리 함수
+  Future<void> _handleDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('게시물 삭제'),
+        content: const Text('정말 이 게시물을 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await CommunityService.deletePost(_post.id);
+      if (mounted) {
+        // 1. 상세 화면을 닫습니다. (이전 화면으로 돌아감)
+        Navigator.pop(context);
+        // 2. [추가된 부분] 이전 화면(CommunityScreen)에 메시지를 띄웁니다.
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('게시물이 삭제되었습니다.')),
+        );
+      }
+    }
+  }
+
+  // 수정 처리 함수
+  void _handleEdit() {
+    showDialog(
+      context: context,
+      builder: (context) => _CreatePostDialog(
+        existingPost: _post, // 현재 포스트 정보를 전달
+        onPost: (updatedPost) async {
+          await CommunityService.updatePost(updatedPost);
+          setState(() {
+            _post = updatedPost;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('게시물이 수정되었습니다.')),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _submitComment() async {
+    if (_commentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('댓글 내용을 입력해주세요')),
+      );
+      return;
+    }
+
+    final userName = await AuthService.getCurrentUserName() ?? '사용자';
+    final userId = await AuthService.getCurrentUserId() ?? 'anonymous';
+
+    final comment = PostComment(
+      postId: _post.id,
+      userId: userId,
+      userName: userName,
+      content: _commentController.text.trim(),
+    );
+
+    await CommunityService.addComment(comment);
+    _commentController.clear();
+
+    await _loadComments();
+    final posts = await CommunityService.getAllPosts();
+    final updatedPost = posts.firstWhere((p) => p.id == _post.id, orElse: () => _post);
+
+    setState(() {
+      _post = updatedPost;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('댓글이 작성되었습니다')),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // 본인 글인지 확인 (현재 유저 ID와 글쓴이 ID 비교)
+    // 실제 앱에서는 null check 등을 더 꼼꼼히 해야 할 수 있습니다.
+    final isMyPost = _currentUserId != null && _currentUserId == _post.userId;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('게시물'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  child: Text(post.userName[0]),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        actions: [
+          // 작성자 본인일 경우에만 수정/삭제 메뉴 표시
+          if (isMyPost)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') _handleEdit();
+                if (value == 'delete') _handleDelete();
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
                     children: [
-                      Text(
-                        post.userName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        DateFormat('yyyy-MM-dd HH:mm').format(post.timestamp),
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      ),
+                      Icon(Icons.edit, size: 20),
+                      SizedBox(width: 8),
+                      Text('수정하기'),
                     ],
                   ),
                 ),
-                Chip(label: Text(post.category)),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Text(
-              post.title,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              post.content,
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    CommunityService.likePost(post.id);
-                  },
-                  icon: const Icon(Icons.favorite_border),
-                  label: Text('좋아요 ${post.likes}'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.red,
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, size: 20, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('삭제하기', style: TextStyle(color: Colors.red)),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.comment_outlined),
-                  label: Text('댓글 ${post.comments}'),
-                ),
               ],
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        child: Text(_post.userName.isNotEmpty ? _post.userName[0] : '?'),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _post.userName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              DateFormat('yyyy-MM-dd HH:mm').format(_post.timestamp),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Chip(label: Text(_post.category)),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    _post.title,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _post.content,
+                    style: const TextStyle(fontSize: 16, height: 1.5),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _handleLike,
+                        icon: Icon(_isLiked ? Icons.favorite : Icons.favorite_border),
+                        label: Text('좋아요 ${_post.likes}'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isLiked ? Colors.red.shade50 : null,
+                          foregroundColor: Colors.red,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        onPressed: null,
+                        icon: const Icon(Icons.comment_outlined),
+                        label: Text('댓글 ${_post.comments}'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  Text(
+                    '댓글 ${_comments.length}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ..._comments.map((comment) => _buildCommentItem(comment)),
+                ],
+              ),
+            ),
+          ),
+          _buildCommentInput(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentItem(PostComment comment) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).dividerColor,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                child: Text(
+                  comment.userName.isNotEmpty ? comment.userName[0] : '?',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      comment.userName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      DateFormat('yyyy-MM-dd HH:mm').format(comment.timestamp),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            comment.content,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentInput() {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 8,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 8,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _commentController,
+                decoration: InputDecoration(
+                  hintText: '댓글을 입력하세요...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                maxLines: null,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _submitComment(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              onPressed: _submitComment,
+              icon: const Icon(Icons.send),
+              color: Theme.of(context).primaryColor,
             ),
           ],
         ),

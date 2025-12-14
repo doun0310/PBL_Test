@@ -452,7 +452,7 @@ class _FoodRecommendationScreenState extends State<FoodRecommendationScreen> {
                   Navigator.pop(context);
                   _addRecommendationToMeal(foods);
                 },
-                child: const Text('이 조합으로 식사 추가'),
+                child: const Text('이 조합으로 음식 추가'),
               ),
             ),
           ],

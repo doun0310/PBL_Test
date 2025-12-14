@@ -5,6 +5,8 @@ class UserGoals {
   final double fatGoal; // g
   final int mealsPerDay;
 
+  var calories;
+
   UserGoals({
     this.dailyCalorieGoal = 2000,
     this.proteinGoal = 50,
