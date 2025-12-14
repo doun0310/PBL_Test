@@ -10,6 +10,7 @@ import 'daily_meal_table_screen.dart';
 import 'exercise_tracking_screen.dart';
 import 'community_screen.dart';
 import 'recipe_screen.dart';
+import 'recommendation_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/nutrition_progress_card.dart';
 import '../widgets/meal_card.dart';
@@ -270,6 +271,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 12),
         Row(
           children: [
+            Expanded(
+              child: _buildQuickAccessCard(
+                '음식 추천',
+                Icons.recommend,
+                Colors.purple,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RecommendationScreen()),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: _buildQuickAccessCard(
                 '커뮤니티',
